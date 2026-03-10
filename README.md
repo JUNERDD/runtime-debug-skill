@@ -1,10 +1,14 @@
-# Runtime Debug Skill
+# JUNERDD Skills
 
-Evidence-first runtime debugging for agent runtimes that support reusable local skills, prompt modules, or workflow packs.
+Reusable AI agent skills published from a single repository. The repository is structured to grow over time; right now it ships the `debug` skill for evidence-first runtime debugging.
 
-This repository packages the installable skill under [`skills/debug/`](./skills/debug/). Users can copy that folder as-is into their skill directory without rearranging files. [`skills/debug/agents/openai.yaml`](./skills/debug/agents/openai.yaml) is only an optional metadata adapter for runtimes that support OpenAI-style skill discovery.
+This repository packages installable skills under [`skills/`](./skills/). Each subfolder is a self-contained skill that can be installed independently. The current skill lives at [`skills/debug/`](./skills/debug/). [`skills/debug/agents/openai.yaml`](./skills/debug/agents/openai.yaml) is only an optional metadata adapter for runtimes that support OpenAI-style skill discovery.
 
-## What You Get
+## Current Skills
+
+- [`debug`](./skills/debug/) for hypothesis-driven runtime debugging with local log capture
+
+## Included Today
 
 - A reusable `debug` skill that forces hypothesis-driven debugging instead of speculative fixes
 - A detailed operator reference in [`skills/debug/references/runtime-debugging.md`](./skills/debug/references/runtime-debugging.md)
@@ -69,16 +73,16 @@ If your runtime ignores [`skills/debug/agents/openai.yaml`](./skills/debug/agent
 
 ## Install
 
-Preferred install via the `skills` CLI:
+Preferred install for the current `debug` skill via the `skills` CLI:
 
 ```bash
-npx skills add JUNERDD/runtime-debug-skill --skill debug
+npx skills add JUNERDD/skills --skill debug
 ```
 
 For a global Codex install:
 
 ```bash
-npx skills add JUNERDD/runtime-debug-skill --skill debug -g -a codex -y
+npx skills add JUNERDD/skills --skill debug -g -a codex -y
 ```
 
 Manual install still works if your runtime does not use the CLI. Copy [`skills/debug/`](./skills/debug/) as a local skill named `debug`.
