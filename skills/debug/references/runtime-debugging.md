@@ -22,7 +22,7 @@ Use this reference when the debugging task needs exact logging, local collector 
 
 ## Host capability checklist
 
-Adapt the workflow to the current host before running commands:
+Adapt the debugging infrastructure to the current host before running commands. Do not preflight the target app unless startup failure is part of the bug you are investigating:
 
 1. Confirm where temporary debug artifacts should live. Reuse an existing host-specific scratch directory when one exists; otherwise default to `$PWD/.debug-logs/`.
 2. Confirm how the host keeps long-lived processes alive: persistent PTY, detached job, task runner, or another supported mechanism.
@@ -30,6 +30,25 @@ Adapt the workflow to the current host before running commands:
 4. Confirm whether the host can open or automate browser pages. If not, rely on the ready file and HTTP APIs.
 5. Confirm whether planned instrumentation runs in browser/client code, server/runtime code, or both. For browser/client code, prefer direct posts to the active collector endpoint and do not assume an app-local proxy is required.
 6. Confirm how the user signals that reproduction is complete. Use the host's real action label or request a short reply if no action exists.
+7. Do not proactively start the target app, hit app health endpoints, probe routes, or run compile/build checks as setup unless the user explicitly asked to debug startup behavior or a current hypothesis depends on that evidence.
+
+## App preflight limits
+
+The default opening move is collector or session setup plus temporary instrumentation, not target-app validation.
+
+Allowed before the first reproduction:
+
+- Preparing the log session, ready file, temp artifact location, and host capability assumptions
+- Deciding where instrumentation will run and how the user will signal reproduction completion
+
+Not allowed as default setup:
+
+- `pnpm dev`, `npm run dev`, or equivalent commands just to see whether the app boots
+- Requests to target-app health endpoints or status routes
+- Route reachability probes, page probes, or "does this URL load" checks
+- Build, compile, or bundle checks whose only purpose is to confirm the app is healthy
+
+Only do those app-level checks when the user explicitly asks to debug startup or availability, or when a specific hypothesis would otherwise remain untestable.
 
 ## Active logging session
 
