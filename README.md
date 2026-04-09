@@ -6,31 +6,33 @@ This repository is a skill collection, not a single-skill package. Installable s
 
 ## Install
 
+The CLI examples below intentionally use the latest `skills` tool version to avoid mismatches with older local installs.
+
 List the skills currently published from this repository:
 
 ```bash
-npx skills add JUNERDD/skills --list
+npx skills@latest add JUNERDD/skills --list
 ```
 
 Install a specific skill:
 
 ```bash
-npx skills add JUNERDD/skills --skill <skill-name>
+npx skills@latest add JUNERDD/skills --skill <skill-name>
 ```
 
 Install globally for Codex:
 
 ```bash
-npx skills add JUNERDD/skills --skill <skill-name> -g -a codex -y
+npx skills@latest add JUNERDD/skills --skill <skill-name> -g -a codex -y
 ```
 
 Examples:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug
-npx skills add JUNERDD/skills --skill git-commit
-npx skills add JUNERDD/skills --skill split-commits
-npx skills add JUNERDD/skills --skill comment-strategist
+npx skills@latest add JUNERDD/skills --skill debug
+npx skills@latest add JUNERDD/skills --skill git-commit
+npx skills@latest add JUNERDD/skills --skill split-commits
+npx skills@latest add JUNERDD/skills --skill comment-strategist
 ```
 
 Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
@@ -56,7 +58,7 @@ cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ~/.
 Install:
 
 ```bash
-npx skills add JUNERDD/skills --skill comment-strategist
+npx skills@latest add JUNERDD/skills --skill comment-strategist
 ```
 
 Best for:
@@ -77,7 +79,7 @@ Key entry points:
 Install:
 
 ```bash
-npx skills add JUNERDD/skills --skill git-commit
+npx skills@latest add JUNERDD/skills --skill git-commit
 ```
 
 Best for:
@@ -98,7 +100,7 @@ Key entry points:
 Install:
 
 ```bash
-npx skills add JUNERDD/skills --skill split-commits
+npx skills@latest add JUNERDD/skills --skill split-commits
 ```
 
 Best for:
@@ -119,7 +121,7 @@ Key entry points:
 Install:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug
+npx skills@latest add JUNERDD/skills --skill debug
 ```
 
 Key entry points:
