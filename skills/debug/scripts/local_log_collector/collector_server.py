@@ -41,11 +41,13 @@ class CollectorServer(ThreadingHTTPServer):
         log_file: Path,
         ready_file: Path | None,
         session_id: str | None,
+        service_log_file: Path | None = None,
     ) -> None:
         super().__init__(server_address, CollectorRequestHandler)
         self.log_file = log_file
         self.ready_file = ready_file
         self.session_id = session_id
+        self.service_log_file = service_log_file
         self.started_at = int(time.time() * 1000)
         self.write_lock = threading.Lock()
         self.shutdown_requested_at: int | None = None
@@ -96,6 +98,21 @@ class CollectorServer(ThreadingHTTPServer):
     @property
     def health_url(self) -> str:
         return f'{self.base_url}/health'
+
+    @property
+    def owned_artifacts(self) -> list[str]:
+        ordered_paths = [self.log_file, self.ready_file, self.service_log_file]
+        unique_paths: list[str] = []
+        seen: set[str] = set()
+        for path in ordered_paths:
+            if path is None:
+                continue
+            text = str(path)
+            if text in seen:
+                continue
+            seen.add(text)
+            unique_paths.append(text)
+        return unique_paths
 
     def build_state(self) -> dict[str, Any]:
         return build_state_response(self)

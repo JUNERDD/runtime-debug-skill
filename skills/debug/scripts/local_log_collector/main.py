@@ -33,6 +33,10 @@ def parse_args() -> argparse.Namespace:
         help='Optional default sessionId inserted when requests omit one.',
     )
     parser.add_argument(
+        '--service-log-file',
+        help='Optional path used for collector stdout/stderr redirection metadata.',
+    )
+    parser.add_argument(
         '--no-open-dashboard',
         action='store_true',
         help='Do not open the dashboard in a browser on startup.',
@@ -40,11 +44,17 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def ensure_parent_dirs(log_file: Path, ready_file: Path | None) -> None:
+def ensure_parent_dirs(
+    log_file: Path,
+    ready_file: Path | None,
+    service_log_file: Path | None,
+) -> None:
     log_file.parent.mkdir(parents=True, exist_ok=True)
     log_file.touch(exist_ok=True)
     if ready_file:
         ready_file.parent.mkdir(parents=True, exist_ok=True)
+    if service_log_file:
+        service_log_file.parent.mkdir(parents=True, exist_ok=True)
 
 
 def install_signal_handlers(server: CollectorServer) -> None:
@@ -69,9 +79,18 @@ def main() -> int:
     args = parse_args()
     log_file = Path(args.log_file).expanduser().resolve()
     ready_file = Path(args.ready_file).expanduser().resolve() if args.ready_file else None
+    service_log_file = (
+        Path(args.service_log_file).expanduser().resolve() if args.service_log_file else None
+    )
 
-    ensure_parent_dirs(log_file, ready_file)
-    server = CollectorServer((args.host, args.port), log_file, ready_file, args.session_id)
+    ensure_parent_dirs(log_file, ready_file, service_log_file)
+    server = CollectorServer(
+        (args.host, args.port),
+        log_file,
+        ready_file,
+        args.session_id,
+        service_log_file,
+    )
     hydrate_log_cache(server)
     install_signal_handlers(server)
 
@@ -83,22 +102,7 @@ def main() -> int:
 
     write_ready_file(server)
 
-    print(
-        json.dumps(
-            {
-                'endpoint': server.endpoint_url,
-                'dashboardUrl': server.dashboard_url,
-                'dashboardOpenAttempted': server.dashboard_open_attempted,
-                'dashboardOpenSucceeded': server.dashboard_open_succeeded,
-                'dashboardOpenError': server.dashboard_open_error,
-                'logFile': str(log_file),
-                'readyFile': str(ready_file) if ready_file else None,
-                'sessionId': args.session_id,
-            },
-            ensure_ascii=True,
-        ),
-        flush=True,
-    )
+    print(json.dumps(build_ready_payload(server), ensure_ascii=True), flush=True)
 
     try:
         server.serve_forever()

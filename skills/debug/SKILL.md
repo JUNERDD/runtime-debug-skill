@@ -18,7 +18,7 @@ Before starting, normalize the current debugging environment without preflightin
 - Determine whether each planned log point runs in browser/client code, server/runtime code, or both. For browser/client code, prefer direct requests to the active collector endpoint instead of adding project-local proxy routes.
 - Determine how the user signals that reproduction is complete: explicit UI button, task-state action, or a short chat reply.
 - Do not treat target-app startup, health checks, route probes, or compile/build checks as default preflight. Only inspect them when the user explicitly asked to debug startup behavior or when a current hypothesis is about app boot, compilation, or endpoint availability.
-- Store temporary artifacts in an existing host-specific scratch directory when one already exists. Otherwise default to a workspace-local hidden directory such as `.debug-logs/`.
+- Store temporary artifacts in an existing host-specific scratch directory when one already exists. Otherwise default to a workspace-local hidden directory such as `.debug-logs/`. If you start the bundled collector yourself, treat that session's artifact list as temporary state you own and must delete after a successful debug pass unless the user explicitly asks to keep it.
 
 ## Workflow
 
@@ -28,7 +28,7 @@ Before starting, normalize the current debugging environment without preflightin
 4. Before each reproduction run or deliberate re-recording pass, verify that the current logging process is still alive. Prefer the active `healthUrl` or `stateUrl` when one exists. If the process has been closed or the check fails, start a new collector process and treat its new ready file values as authoritative before continuing.
 5. If restarting the collector changed the active ingest endpoint or port, update the existing temporary logging code so it no longer points at the stale port. Apply that refresh before the next reproduction run and keep the edits limited to the active debug instrumentation for the current task.
 6. Preserve any evidence you still need from the current run, then clear only the active session's existing logs so the next run starts from a low-noise baseline. Prefer the active clear endpoint when one exists; fall back to truncating the active session log file only when no clear endpoint is available.
-7. Ask the user to reproduce the issue. End the response with a `<reproduction_steps>...</reproduction_steps>` block containing only a numbered list. Make the final instruction match the host's completion mechanic exactly: use the real button or task action label when one exists, otherwise ask for a short completion reply.
+7. Ask the user to reproduce the issue. When the host exposes Codex's official request-user-input form capability, prefer that documented form flow for the reproduction prompt. Otherwise fall back to a plain numbered list in normal message text. In either case, make the final instruction match the host's real completion mechanic exactly: use the actual button or task action label when one exists, otherwise ask for a short completion reply. Do not rely on custom XML or HTML tags for UI behavior.
 8. Read the active session's NDJSON log file and evaluate every hypothesis as `CONFIRMED`, `REJECTED`, or `INCONCLUSIVE`, citing the relevant log evidence.
 9. Apply a fix only after the logs prove the root cause. Keep instrumentation in place while implementing the fix.
 10. Before the post-fix verification run, verify the current logging process is still alive again. If it has been closed, start a new collector process and adopt its new ready file values before clearing and collecting verification logs.
@@ -36,7 +36,8 @@ Before starting, normalize the current debugging environment without preflightin
 12. Clear only the active session's current logs again so before/after evidence does not mix.
 13. Ask for a post-fix reproduction run and compare before/after logs.
 14. Remove all injected temporary logging code only after logs prove the fix worked and the user confirms the issue is gone. This includes the inserted log calls, debug-only endpoint constants, temporary headers, and any other scaffolding added only for this debugging pass.
-15. If the fix fails, remove code changes that came from rejected hypotheses, keep useful instrumentation, generate new hypotheses from a different subsystem, and repeat.
+15. If you started the bundled collector for this task, stop it and delete the session artifacts it owns after any final evidence handoff. Use the collector metadata as authoritative: remove the active session's NDJSON log file, ready file, service log file, and any additional paths listed in `ownedArtifacts`, unless the user explicitly asked to keep them. If the scratch directory becomes empty after cleanup, remove it too.
+16. If the fix fails, remove code changes that came from rejected hypotheses, keep useful instrumentation, generate new hypotheses from a different subsystem, and repeat.
 
 ## Guardrails
 
@@ -60,6 +61,8 @@ Before starting, normalize the current debugging environment without preflightin
 - Never open the same dashboard twice. If the bundled collector already opened the dashboard successfully, do not call MCP or browser automation just to open that page again.
 - Never restart the collector and leave the temporary logging code pointed at a stale ingest port.
 - Never leave injected temporary logging code behind after the bug is proven fixed and the user confirms the issue is gone.
+- Never leave bundled-collector session artifacts behind after a successful debug session unless the user explicitly asked to keep them.
+- Never delete files that belong to an externally provided logging session you did not create.
 
 ## Instrumentation Rules
 
@@ -83,6 +86,7 @@ Before starting, normalize the current debugging environment without preflightin
 - When you need a clean rerun, clear the current session's existing logs before collecting the next pass so stale entries do not pollute the evidence.
 - Prefer calling the active clear endpoint for that reset when one exists. Only truncate the active session log file directly when no clear endpoint is available.
 - Read the active session log file itself when analyzing evidence.
+- When you started the bundled collector, treat its `ownedArtifacts` metadata as the authoritative teardown list for post-success cleanup.
 
 Read [runtime-debugging.md](./references/runtime-debugging.md) for local collector bootstrap commands, dashboard URLs, CORS behavior, payload fields, logging templates, response shape, and verification rules.
 
@@ -92,7 +96,7 @@ Structure the debugging conversation in this order:
 
 1. Hypotheses
 2. Instrumentation plan or applied log points
-3. Reproduction request with the required `<reproduction_steps>` block
+3. Reproduction request using official request-user-input UI when available, otherwise a plain numbered list
 4. Log analysis with `CONFIRMED` / `REJECTED` / `INCONCLUSIVE`
 5. Proven fix
 6. Post-fix verification

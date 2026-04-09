@@ -204,6 +204,8 @@ def build_service_payload(service: Any) -> dict[str, Any]:
     return {
         'sessionId': service.session_id,
         'logFile': str(service.log_file),
+        'serviceLogFile': str(service.service_log_file) if service.service_log_file else None,
+        'ownedArtifacts': service.owned_artifacts,
         'endpoint': service.endpoint_url,
         'dashboardUrl': service.dashboard_url,
         'stateUrl': service.state_url,

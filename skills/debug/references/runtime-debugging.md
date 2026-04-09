@@ -12,11 +12,12 @@ Use this reference when the debugging task needs exact logging, local collector 
 - Dashboard and operator APIs
 - CORS behavior
 - Clearing the active log file
+- Session artifact cleanup
 - Log format
 - JavaScript / TypeScript template
 - Non-JavaScript template
 - Reading evidence
-- Reproduction block
+- Reproduction request
 - Log analysis standard
 - Fix and verification rules
 
@@ -76,7 +77,7 @@ Prefer this order:
    - Log path
    - Session ID
    - Ready file
-2. Otherwise resolve a local Python 3 interpreter and start the bundled local collector service first. It should own the current session's NDJSON log file, expose the dashboard and operator APIs from the same origin, and its ready file becomes the source of truth for endpoint, log path, dashboard URL, and session ID.
+2. Otherwise resolve a local Python 3 interpreter and start the bundled local collector service first. It should own the current session's NDJSON log file, expose the dashboard and operator APIs from the same origin, and its ready file becomes the source of truth for endpoint, log path, dashboard URL, session ID, and owned temporary artifacts.
 3. If no Python 3 interpreter is available, if the logging system is explicitly unavailable, or if the local collector failed to start, stop and tell the user you cannot proceed with evidence-first debugging in the configured mode unless they provide an authoritative logging session or a local Python 3 runtime.
 
 When the bundled collector provides dashboard auto-open fields in the ready file, treat them as authoritative:
@@ -128,6 +129,7 @@ mkdir -p .debug-logs
   --log-file "$PWD/.debug-logs/<SESSION_ID>.ndjson" \
   --ready-file "$PWD/.debug-logs/<SESSION_ID>.json" \
   --session-id "<SESSION_ID>" \
+  --service-log-file "$PWD/.debug-logs/<SESSION_ID>.service.log" \
   > "$PWD/.debug-logs/<SESSION_ID>.service.log" 2>&1
 ```
 
@@ -139,10 +141,11 @@ nohup "$PYTHON_BIN" <SKILL_ROOT>/scripts/local_log_collector/main.py \
   --log-file "$PWD/.debug-logs/<SESSION_ID>.ndjson" \
   --ready-file "$PWD/.debug-logs/<SESSION_ID>.json" \
   --session-id "<SESSION_ID>" \
+  --service-log-file "$PWD/.debug-logs/<SESSION_ID>.service.log" \
   > "$PWD/.debug-logs/<SESSION_ID>.service.log" 2>&1 &
 ```
 
-Resolve `<SKILL_ROOT>` to the installed debug skill directory before running the command. Generate `<SESSION_ID>` from the task plus a timestamp, for example `checkout-bug-1733456789000`. The collector attempts to open the dashboard in the default browser automatically unless you pass `--no-open-dashboard`. After the service starts, read the ready file and reuse the returned values exactly, including the dashboard auto-open result.
+Resolve `<SKILL_ROOT>` to the installed debug skill directory before running the command. Generate `<SESSION_ID>` from the task plus a timestamp, for example `checkout-bug-1733456789000`. The collector attempts to open the dashboard in the default browser automatically unless you pass `--no-open-dashboard`. After the service starts, read the ready file and reuse the returned values exactly, including the dashboard auto-open result, `serviceLogFile`, and `ownedArtifacts`.
 
 If you are operating inside an agent runtime that has its own browser automation or embedded browser, do not open `dashboardUrl` there when the ready file reports `dashboardOpenSucceeded: true`, because that would duplicate the same page open. Only fall back to MCP or an embedded browser for the collector dashboard when the ready file reports `dashboardOpenSucceeded: false` or `dashboardOpenAttempted: false`. Do not open target-app pages unless the user explicitly asked you to open the project. If the host has no browser access, continue with the ready file values plus `GET /api/state`, `GET /health`, `POST /api/clear`, and `POST /api/shutdown`.
 
@@ -162,7 +165,13 @@ Ready file example:
   "host": "127.0.0.1",
   "port": 43125,
   "logFile": "/abs/path/.debug-logs/checkout-bug-1733456789000.ndjson",
+  "serviceLogFile": "/abs/path/.debug-logs/checkout-bug-1733456789000.service.log",
   "readyFile": "/abs/path/.debug-logs/checkout-bug-1733456789000.json",
+  "ownedArtifacts": [
+    "/abs/path/.debug-logs/checkout-bug-1733456789000.ndjson",
+    "/abs/path/.debug-logs/checkout-bug-1733456789000.json",
+    "/abs/path/.debug-logs/checkout-bug-1733456789000.service.log"
+  ],
   "sessionId": "checkout-bug-1733456789000",
   "pid": 12345,
   "startedAt": 1733456789000
@@ -209,6 +218,8 @@ The same service also exposes:
 - `POST /api/clear` to truncate the current session log file
 - `POST /api/shutdown` to stop the collector after the response returns
 
+Both the ready file and `GET /api/state` include `serviceLogFile` plus an `ownedArtifacts` list. When you started the bundled collector yourself, treat that artifact list as the authoritative cleanup target after the debug session succeeds.
+
 ## CORS behavior
 
 The bundled collector must not introduce browser CORS issues:
@@ -238,6 +249,48 @@ When the session does not expose a clear endpoint, fall back to truncating only 
 ```
 
 Never clear a different session's logs, and never clear the active session until you have already captured any evidence you still need from the current run.
+
+## Session artifact cleanup
+
+Only delete artifacts you own.
+
+- If the logging session was provided by the host, another tool, or the user, do not delete its files.
+- If you started the bundled collector for the current task, stop it after post-fix verification succeeds and after any final evidence handoff the user still needs.
+- Then delete every path listed in `ownedArtifacts`, which should include the session NDJSON log, ready file, and service log.
+- If the scratch directory becomes empty after that deletion, remove it too.
+
+One safe pattern is:
+
+```bash
+curl -X POST "<SHUTDOWN_URL>" \
+  -H 'Content-Type: application/json' \
+  --data '{}'
+python3 - <<'PY' "<READY_FILE>"
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import sys
+
+ready_path = Path(sys.argv[1])
+payload = json.loads(ready_path.read_text(encoding='utf-8'))
+artifacts = [Path(path) for path in payload.get('ownedArtifacts', []) if path]
+
+for artifact in artifacts:
+    try:
+        artifact.unlink()
+    except FileNotFoundError:
+        pass
+
+artifact_dir = Path(payload['logFile']).parent
+try:
+    artifact_dir.rmdir()
+except OSError:
+    pass
+PY
+```
+
+If you already captured the artifact list in memory, use that list directly rather than re-reading a ready file you are about to delete.
 
 ## Log format
 
@@ -300,16 +353,22 @@ For JavaScript or TypeScript that runs only on the server, still call the active
 
 After the user reproduces the issue, open the active session log file and analyze the recorded NDJSON lines directly. Use the collector's stdout or stderr only when you are debugging the collector itself.
 
-## Reproduction block
+## Reproduction request
 
-Always end the reproduction request with this exact wrapper and keep only a numbered list inside it. Replace the final line with the host's actual completion action or a short reply instruction:
+Do not depend on custom XML or HTML tags such as `<reproduction_steps>` for Codex UI behavior. The documented Codex form path is the official request-user-input capability; use that when the current host exposes it. When that form capability is unavailable, send a plain numbered list in regular message text.
 
-```html
-<reproduction_steps>
+Preferred form-based request when supported:
+
+- Use the host's official request-user-input flow for a short reproduction prompt.
+- Keep the prompt to 1-3 short questions or confirmation actions because that is the documented form shape.
+- Match the host's actual completion mechanic exactly instead of inventing synthetic labels.
+
+Fallback text request when no form capability is available:
+
+```text
 1. Reproduce the bug in the smallest realistic flow.
 2. Restart any required app or service first if the new logs are not loaded automatically.
 3. <HOST_COMPLETION_INSTRUCTION>
-</reproduction_steps>
 ```
 
 Examples:
@@ -334,4 +393,5 @@ Quote or cite the specific log entries that support the judgment.
 - Tag verification runs with a distinct `runId` such as `post-fix`.
 - Compare before and after logs before claiming success.
 - Remove all injected temporary logging code only after log proof and user confirmation. Remove the inserted log calls and any temporary endpoint constants, headers, or other debug-only scaffolding that was added for the current debugging pass.
+- When you started the bundled collector, stop it and delete every path in `ownedArtifacts` after success unless the user explicitly asked to keep the evidence files.
 - If a hypothesis is rejected, remove the code changes based on that hypothesis instead of letting speculative changes accumulate.
