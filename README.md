@@ -12,23 +12,23 @@ List the skills currently published from this repository:
 npx skills add JUNERDD/skills --list
 ```
 
-Install the current `debug` skill:
+Install a specific skill, for example `git-commit`:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug
+npx skills add JUNERDD/skills --skill git-commit
 ```
 
-Install `debug` globally for Codex:
+Install `comment-strategist` globally for Codex:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug -g -a codex -y
+npx skills add JUNERDD/skills --skill comment-strategist -g -a codex -y
 ```
 
-Manual install still works if your runtime does not use the `skills` CLI. Copy [`skills/debug/`](./skills/debug/) into your local skill directory:
+Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
 
 ```bash
 mkdir -p ~/.agents/skills
-cp -R ./skills/debug ~/.agents/skills/
+cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ~/.agents/skills/
 ```
 
 ## Repository Model
@@ -39,6 +39,11 @@ cp -R ./skills/debug ~/.agents/skills/
 - Shared repository assets such as screenshots can live outside `skills/` when they are not part of the installable package itself.
 
 ## Current Skills
+
+- [`skills/comment-strategist/`](./skills/comment-strategist/) adds durable code comments that explain intent, constraints, and semantic meaning instead of translating syntax.
+- [`skills/debug/`](./skills/debug/) provides evidence-first runtime debugging for application bugs, regressions, flaky behavior, and unclear runtime failures.
+- [`skills/git-commit/`](./skills/git-commit/) drafts Conventional Commit messages from the staged diff only and never mutates Git state.
+- [`skills/split-commits/`](./skills/split-commits/) turns a mixed working tree into focused local commits with explicit user confirmation before each `git commit`.
 
 ### `debug`
 
@@ -152,19 +157,31 @@ When you add more skills later:
 │   └── images/
 │       └── dashboard-overview.png
 └── skills/
-    └── debug/
+    ├── comment-strategist/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    ├── debug/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   │   └── openai.yaml
+    │   ├── references/
+    │   │   └── runtime-debugging.md
+    │   └── scripts/
+    │       └── local_log_collector/
+    │           ├── main.py
+    │           ├── collector_server.py
+    │           ├── collector_state.py
+    │           ├── collector_browser.py
+    │           └── static/
+    ├── git-commit/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    └── split-commits/
         ├── SKILL.md
-        ├── agents/
-        │   └── openai.yaml
-        ├── references/
-        │   └── runtime-debugging.md
-        └── scripts/
-            └── local_log_collector/
-                ├── main.py
-                ├── collector_server.py
-                ├── collector_state.py
-                ├── collector_browser.py
-                └── static/
+        └── agents/
+            └── openai.yaml
 ```
 
 ## License

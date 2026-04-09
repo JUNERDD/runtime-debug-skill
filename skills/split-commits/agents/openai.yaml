@@ -1,0 +1,4 @@
+interface:
+  display_name: "split-commits"
+  short_description: "Split large changes into focused commits"
+  default_prompt: "Use $split-commits to split the current working tree into multiple focused local commits with manual confirmation before each commit."
