@@ -1,0 +1,4 @@
+interface:
+  display_name: "git-commit"
+  short_description: "Draft a commit message from staged changes"
+  default_prompt: "Use $git-commit to draft a Conventional Commit message from the current staged changes."

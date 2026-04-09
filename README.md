@@ -6,29 +6,40 @@ This repository is a skill collection, not a single-skill package. Installable s
 
 ## Install
 
+The CLI examples below intentionally use the latest `skills` tool version to avoid mismatches with older local installs.
+
 List the skills currently published from this repository:
 
 ```bash
-npx skills add JUNERDD/skills --list
+npx skills@latest add JUNERDD/skills --list
 ```
 
-Install the current `debug` skill:
+Install a specific skill:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug
+npx skills@latest add JUNERDD/skills --skill <skill-name>
 ```
 
-Install `debug` globally for Codex:
+Install globally for Codex:
 
 ```bash
-npx skills add JUNERDD/skills --skill debug -g -a codex -y
+npx skills@latest add JUNERDD/skills --skill <skill-name> -g -a codex -y
 ```
 
-Manual install still works if your runtime does not use the `skills` CLI. Copy [`skills/debug/`](./skills/debug/) into your local skill directory:
+Examples:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill debug
+npx skills@latest add JUNERDD/skills --skill git-commit
+npx skills@latest add JUNERDD/skills --skill split-commits
+npx skills@latest add JUNERDD/skills --skill comment-strategist
+```
+
+Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
 
 ```bash
 mkdir -p ~/.agents/skills
-cp -R ./skills/debug ~/.agents/skills/
+cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ~/.agents/skills/
 ```
 
 ## Repository Model
@@ -40,9 +51,78 @@ cp -R ./skills/debug ~/.agents/skills/
 
 ## Current Skills
 
+### `comment-strategist`
+
+[`skills/comment-strategist/`](./skills/comment-strategist/) is for documenting existing code without adding low-value comment noise. It focuses on intent, contracts, constraints, field meaning, and control-flow rationale instead of rewriting syntax in prose.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill comment-strategist
+```
+
+Best for:
+
+- documenting exported functions, interfaces, classes, and config objects
+- replacing outdated or redundant comments with durable explanations
+- adding guided comments inside complex logic while preserving the local comment style
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/comment-strategist/SKILL.md`](./skills/comment-strategist/SKILL.md)
+- Optional runtime metadata: [`skills/comment-strategist/agents/openai.yaml`](./skills/comment-strategist/agents/openai.yaml)
+
+### `git-commit`
+
+[`skills/git-commit/`](./skills/git-commit/) drafts a Conventional Commit message from the staged diff only. It is intentionally narrow: it reads what is already staged, proposes one accurate message, and does not mutate Git state.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill git-commit
+```
+
+Best for:
+
+- generating a clean commit subject from the current index
+- checking whether a staged batch is too mixed for one honest commit message
+- keeping commit wording grounded in staged files instead of unstaged work
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/git-commit/SKILL.md`](./skills/git-commit/SKILL.md)
+- Optional runtime metadata: [`skills/git-commit/agents/openai.yaml`](./skills/git-commit/agents/openai.yaml)
+
+### `split-commits`
+
+[`skills/split-commits/`](./skills/split-commits/) helps break a mixed working tree into a sequence of focused local commits. It stages one logical batch at a time, asks `$git-commit` for a message, and requires explicit confirmation before each `git commit`.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill split-commits
+```
+
+Best for:
+
+- separating unrelated concerns in the same working tree
+- isolating refactors from behavior changes
+- building a short series of reviewable local commits without pushing
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/split-commits/SKILL.md`](./skills/split-commits/SKILL.md)
+- Optional runtime metadata: [`skills/split-commits/agents/openai.yaml`](./skills/split-commits/agents/openai.yaml)
+
 ### `debug`
 
-[`skills/debug/`](./skills/debug/) provides evidence-first runtime debugging for application bugs, regressions, flaky behavior, and unclear runtime failures.
+[`skills/debug/`](./skills/debug/) provides evidence-first runtime debugging for application bugs, regressions, flaky behavior, and unclear runtime failures. It is the most operational skill in the repository and includes both workflow guidance and a local log collector.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill debug
+```
 
 Key entry points:
 
@@ -152,19 +232,31 @@ When you add more skills later:
 │   └── images/
 │       └── dashboard-overview.png
 └── skills/
-    └── debug/
+    ├── comment-strategist/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    ├── debug/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   │   └── openai.yaml
+    │   ├── references/
+    │   │   └── runtime-debugging.md
+    │   └── scripts/
+    │       └── local_log_collector/
+    │           ├── main.py
+    │           ├── collector_server.py
+    │           ├── collector_state.py
+    │           ├── collector_browser.py
+    │           └── static/
+    ├── git-commit/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    └── split-commits/
         ├── SKILL.md
-        ├── agents/
-        │   └── openai.yaml
-        ├── references/
-        │   └── runtime-debugging.md
-        └── scripts/
-            └── local_log_collector/
-                ├── main.py
-                ├── collector_server.py
-                ├── collector_state.py
-                ├── collector_browser.py
-                └── static/
+        └── agents/
+            └── openai.yaml
 ```
 
 ## License
