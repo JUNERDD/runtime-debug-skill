@@ -1,5 +1,9 @@
 # JUNERDD Skills
 
+<p align="center">
+  <img src="./docs/images/readme-hero.png" alt="JUNERDD Skills hero" width="960">
+</p>
+
 Reusable AI agent skills published from a single repository.
 
 This repository is a skill collection, not a single-skill package. Installable skills live under [`skills/`](./skills/), and each subfolder is meant to be independently installable, versioned, and expanded over time.
