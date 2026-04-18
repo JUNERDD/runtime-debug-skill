@@ -4,6 +4,17 @@ Reusable AI agent skills published from a single repository.
 
 This repository is a skill collection, not a single-skill package. Installable skills live under [`skills/`](./skills/), and each subfolder is meant to be independently installable, versioned, and expanded over time.
 
+## Skills At A Glance
+
+If you are deciding what to install, start here:
+
+- [`comment-strategist`](#comment-strategist) - add high-value code comments without comment noise
+- [`git-commit`](#git-commit) - draft a Conventional Commit message from the staged diff
+- [`split-commits`](#split-commits) - split a mixed working tree into focused local commits
+- [`debug`](#debug) - debug runtime issues with an evidence-first logging workflow
+- [`hack-review`](#hack-review) - review whether an implementation relies on brittle hack-like shortcuts
+- [`receiving-hack-review`](#receiving-hack-review) - consume a hack-review report and verify each finding before changing code
+
 ## Install
 
 The CLI examples below intentionally use the latest `skills` tool version to avoid mismatches with older local installs.
@@ -52,6 +63,8 @@ cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ./s
 - Shared repository assets such as screenshots can live outside `skills/` when they are not part of the installable package itself.
 
 ## Current Skills
+
+Use the anchor list above for a quick jump, then read the section that matches your task.
 
 ### `comment-strategist`
 
