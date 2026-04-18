@@ -1,0 +1,4 @@
+interface:
+  display_name: "Regression Review"
+  short_description: "Audit user-visible regression risk"
+  default_prompt: "Use $regression-review to inspect the current changes and write a Markdown report of user-visible regression risk."

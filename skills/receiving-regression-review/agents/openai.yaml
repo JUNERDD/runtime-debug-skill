@@ -1,0 +1,4 @@
+interface:
+  display_name: "Receiving Regression Review"
+  short_description: "Handle regression review findings"
+  default_prompt: "Use $receiving-regression-review to evaluate and address a regression-review report before changing code."

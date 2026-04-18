@@ -14,6 +14,8 @@ If you are deciding what to install, start here:
 - [`debug`](#debug) - debug runtime issues with an evidence-first logging workflow
 - [`hack-review`](#hack-review) - review whether an implementation relies on brittle hack-like shortcuts
 - [`receiving-hack-review`](#receiving-hack-review) - consume a hack-review report and verify each finding before changing code
+- [`regression-review`](#regression-review) - review code changes for user-visible behavioral regressions
+- [`receiving-regression-review`](#receiving-regression-review) - consume a regression-review report and verify each finding before changing code
 
 ## Install
 
@@ -46,13 +48,15 @@ npx skills@latest add JUNERDD/skills --skill split-commits
 npx skills@latest add JUNERDD/skills --skill comment-strategist
 npx skills@latest add JUNERDD/skills --skill hack-review
 npx skills@latest add JUNERDD/skills --skill receiving-hack-review
+npx skills@latest add JUNERDD/skills --skill regression-review
+npx skills@latest add JUNERDD/skills --skill receiving-regression-review
 ```
 
 Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
 
 ```bash
 mkdir -p ~/.agents/skills
-cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ./skills/hack-review ./skills/receiving-hack-review ~/.agents/skills/
+cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ./skills/hack-review ./skills/receiving-hack-review ./skills/regression-review ./skills/receiving-regression-review ~/.agents/skills/
 ```
 
 ## Repository Model
@@ -270,6 +274,49 @@ Key entry points:
 - Workflow and guardrails: [`skills/receiving-hack-review/SKILL.md`](./skills/receiving-hack-review/SKILL.md)
 - Optional runtime metadata: [`skills/receiving-hack-review/agents/openai.yaml`](./skills/receiving-hack-review/agents/openai.yaml)
 
+### `regression-review`
+
+[`skills/regression-review/`](./skills/regression-review/) reviews whether the current change set introduces user-visible behavioral regressions. It writes a reviewer-facing gate report organized around `Block`, `Discuss`, `Watch`, and `Intentional Changes`.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill regression-review
+```
+
+Best for:
+
+- checking whether a refactor or feature work breaks user-facing flows
+- auditing changed defaults, loading states, retries, ordering, or exported output
+- writing a review artifact that keeps severity aligned with the strongest unresolved finding
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/regression-review/SKILL.md`](./skills/regression-review/SKILL.md)
+- Report template: [`skills/regression-review/references/report-template.md`](./skills/regression-review/references/report-template.md)
+- Optional runtime metadata: [`skills/regression-review/agents/openai.yaml`](./skills/regression-review/agents/openai.yaml)
+
+### `receiving-regression-review`
+
+[`skills/receiving-regression-review/`](./skills/receiving-regression-review/) consumes a `regression-review` report and decides whether each finding still applies, should be fixed, should be challenged, or should remain as an intentional product change.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill receiving-regression-review
+```
+
+Best for:
+
+- re-checking a regression gate against the current diff and baseline
+- fixing only proven user-visible regressions instead of blindly following review comments
+- separating real regressions from intentional product deltas with stronger evidence
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/receiving-regression-review/SKILL.md`](./skills/receiving-regression-review/SKILL.md)
+- Optional runtime metadata: [`skills/receiving-regression-review/agents/openai.yaml`](./skills/receiving-regression-review/agents/openai.yaml)
+
 ## Growing The Repository
 
 When you add more skills later:
@@ -321,6 +368,16 @@ When you add more skills later:
     │   ├── SKILL.md
     │   └── agents/
     │       └── openai.yaml
+    ├── receiving-regression-review/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    ├── regression-review/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   │   └── openai.yaml
+    │   └── references/
+    │       └── report-template.md
     └── split-commits/
         ├── SKILL.md
         └── agents/
