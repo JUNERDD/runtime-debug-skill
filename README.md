@@ -33,13 +33,15 @@ npx skills@latest add JUNERDD/skills --skill debug
 npx skills@latest add JUNERDD/skills --skill git-commit
 npx skills@latest add JUNERDD/skills --skill split-commits
 npx skills@latest add JUNERDD/skills --skill comment-strategist
+npx skills@latest add JUNERDD/skills --skill hack-review
+npx skills@latest add JUNERDD/skills --skill receiving-hack-review
 ```
 
 Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
 
 ```bash
 mkdir -p ~/.agents/skills
-cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ~/.agents/skills/
+cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ./skills/hack-review ./skills/receiving-hack-review ~/.agents/skills/
 ```
 
 ## Repository Model
@@ -212,6 +214,49 @@ python3 skills/debug/scripts/local_log_collector/main.py \
   --session-id "demo-session"
 ```
 
+### `hack-review`
+
+[`skills/hack-review/`](./skills/hack-review/) reviews whether an implementation is relying on hack-like tactics instead of sound ownership and abstraction boundaries. It produces a reviewer-facing gate report rather than a vague smell list.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill hack-review
+```
+
+Best for:
+
+- identifying impossible-state fallbacks that hide a broken invariant
+- flagging symptom-masking patches that do not fix the root cause
+- catching duplicate abstractions or parallel wheels when a stable boundary already exists
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/hack-review/SKILL.md`](./skills/hack-review/SKILL.md)
+- Report template: [`skills/hack-review/references/report-template.md`](./skills/hack-review/references/report-template.md)
+- Optional runtime metadata: [`skills/hack-review/agents/openai.yaml`](./skills/hack-review/agents/openai.yaml)
+
+### `receiving-hack-review`
+
+[`skills/receiving-hack-review/`](./skills/receiving-hack-review/) consumes a `hack-review` report and decides whether each finding still applies, should be fixed, should be challenged, or is actually a bounded intentional exception.
+
+Install:
+
+```bash
+npx skills@latest add JUNERDD/skills --skill receiving-hack-review
+```
+
+Best for:
+
+- re-checking that a hack report matches the exact requested review scope
+- fixing ownership problems without mechanically deleting necessary guards
+- narrowing or disproving hack findings with stronger code-path evidence
+
+Key entry points:
+
+- Workflow and guardrails: [`skills/receiving-hack-review/SKILL.md`](./skills/receiving-hack-review/SKILL.md)
+- Optional runtime metadata: [`skills/receiving-hack-review/agents/openai.yaml`](./skills/receiving-hack-review/agents/openai.yaml)
+
 ## Growing The Repository
 
 When you add more skills later:
@@ -250,6 +295,16 @@ When you add more skills later:
     │           ├── collector_browser.py
     │           └── static/
     ├── git-commit/
+    │   ├── SKILL.md
+    │   └── agents/
+    │       └── openai.yaml
+    ├── hack-review/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   │   └── openai.yaml
+    │   └── references/
+    │       └── report-template.md
+    ├── receiving-hack-review/
     │   ├── SKILL.md
     │   └── agents/
     │       └── openai.yaml

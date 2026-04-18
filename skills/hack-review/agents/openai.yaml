@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hack Review"
+  short_description: "Review hack-risk in implementations"
+  default_prompt: "Use $hack-review to inspect the current implementation or diff and write a Markdown report of hack-risk findings."

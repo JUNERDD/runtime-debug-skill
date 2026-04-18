@@ -1,0 +1,4 @@
+interface:
+  display_name: "Receiving Hack Review"
+  short_description: "Handle hack-review findings safely"
+  default_prompt: "Use $receiving-hack-review to evaluate and address a hack-review report before changing code."
