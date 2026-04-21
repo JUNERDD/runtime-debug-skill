@@ -8,7 +8,7 @@ Reusable AI agent skills published from a single repository.
 
 This repository is a skill collection, not a single-skill package. Installable skills live under [`skills/`](./skills/), and each subfolder is meant to be independently installable, versioned, and expanded over time.
 
-## Skills At A Glance
+## 🧭 Skills At A Glance
 
 If you are deciding what to install, start here:
 
@@ -21,7 +21,15 @@ If you are deciding what to install, start here:
 - [`regression-review`](#regression-review) - review code changes for user-visible behavioral regressions
 - [`receiving-regression-review`](#receiving-regression-review) - consume a regression-review report and verify each finding before changing code
 
-## Install
+## 📦 Install
+
+If you want an agent to install this repository for you without copying files, tell it:
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/JUNERDD/skills/refs/heads/main/docs/INSTALL.md
+```
+
+If the agent already has this repository open locally, it can read [`./docs/INSTALL.md`](./docs/INSTALL.md) directly instead of fetching the raw GitHub URL.
 
 The CLI examples below intentionally use the latest `skills` tool version to avoid mismatches with older local installs.
 
@@ -56,21 +64,21 @@ npx skills@latest add JUNERDD/skills --skill regression-review
 npx skills@latest add JUNERDD/skills --skill receiving-regression-review
 ```
 
-Manual install still works if your runtime does not use the `skills` CLI. Copy one or more skill folders into your local skill directory:
+Manual symlink install still works if you prefer not to use the agent prompt:
 
 ```bash
-mkdir -p ~/.agents/skills
-cp -R ./skills/git-commit ./skills/split-commits ./skills/comment-strategist ./skills/hack-review ./skills/receiving-hack-review ./skills/regression-review ./skills/receiving-regression-review ~/.agents/skills/
+mkdir -p ~/.agents
+ln -s "$PWD/skills" ~/.agents/junerdd-skill
 ```
 
-## Repository Model
+## 🧱 Repository Model
 
 - Each installable skill lives under `skills/<skill-name>/`.
 - Each skill owns its own `SKILL.md` plus any optional `agents/`, `references/`, `scripts/`, or `assets/` directories.
 - Root-level files describe the repository as a collection. Skill-specific behavior and deep operational details stay inside the relevant skill folder.
 - Shared repository assets such as screenshots can live outside `skills/` when they are not part of the installable package itself.
 
-## Current Skills
+## 🗂️ Current Skills
 
 Use the anchor list above for a quick jump, then read the section that matches your task.
 
@@ -321,7 +329,7 @@ Key entry points:
 - Workflow and guardrails: [`skills/receiving-regression-review/SKILL.md`](./skills/receiving-regression-review/SKILL.md)
 - Optional runtime metadata: [`skills/receiving-regression-review/agents/openai.yaml`](./skills/receiving-regression-review/agents/openai.yaml)
 
-## Growing The Repository
+## 🌱 Growing The Repository
 
 When you add more skills later:
 
@@ -331,7 +339,7 @@ When you add more skills later:
 - Update the `Current Skills` section in this README with a one-line summary and relevant links.
 - Keep repo-level README content about the collection itself; move deep procedural detail into the skill that owns it.
 
-## Repository Layout
+## 🏗️ Repository Layout
 
 ```text
 .
@@ -388,6 +396,6 @@ When you add more skills later:
             └── openai.yaml
 ```
 
-## License
+## ⚖️ License
 
 Released under the [MIT License](./LICENSE).
