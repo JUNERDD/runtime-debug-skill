@@ -67,8 +67,8 @@ npx skills@latest add JUNERDD/skills --skill receiving-regression-review
 Manual symlink install still works if you prefer not to use the agent prompt:
 
 ```bash
-mkdir -p ~/.agents
-ln -s "$PWD/skills" ~/.agents/junerdd-skill
+mkdir -p ~/.agents/skills
+ln -s "$PWD/skills" ~/.agents/skills/junerdd-skill
 ```
 
 ## 🧱 Repository Model
