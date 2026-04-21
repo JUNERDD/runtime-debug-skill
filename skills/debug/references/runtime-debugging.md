@@ -357,6 +357,13 @@ After the user reproduces the issue, open the active session log file and analyz
 
 Do not depend on custom XML or HTML tags such as `<reproduction_steps>` for Codex UI behavior. The documented Codex form path is the official request-user-input capability; use that when it is available in the current host mode. When that form capability is unavailable, send a plain numbered list in regular message text.
 
+Phase handling:
+
+- Treat `commentary` as interim progress text, not as the durable handoff surface for required user actions.
+- Put fallback numbered reproduction or verification steps in the final assistant answer text, not in commentary.
+- If you need a progress update before the handoff, keep it separate and restate any required user action only in the final visible handoff.
+- Do not emit the same handoff text as both `commentary` and final-answer text, because some Codex clients can render both copies separately.
+
 Visible-handoff requirements:
 
 - The reproduction or verification request must be the last user-visible output in that turn.

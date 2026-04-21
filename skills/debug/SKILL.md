@@ -28,13 +28,13 @@ Before starting, normalize the current debugging environment without preflightin
 4. Before each reproduction run or deliberate re-recording pass, verify that the current logging process is still alive. Prefer the active `healthUrl` or `stateUrl` when one exists. If the process has been closed or the check fails, start a new collector process and treat its new ready file values as authoritative before continuing.
 5. If restarting the collector changed the active ingest endpoint or port, update the existing temporary logging code so it no longer points at the stale port. Apply that refresh before the next reproduction run and keep the edits limited to the active debug instrumentation for the current task.
 6. Preserve any evidence you still need from the current run, then clear only the active session's existing logs so the next run starts from a low-noise baseline. Prefer the active clear endpoint when one exists; fall back to truncating the active session log file only when no clear endpoint is available.
-7. Ask the user to reproduce the issue. When the official request-user-input form is available in the current host mode, prefer that documented form flow for the reproduction prompt. Otherwise fall back to a plain numbered list in normal message text. In either case, make the final instruction match the host's real completion mechanic exactly: use the actual button or task action label when one exists, otherwise ask for a short completion reply. Do not rely on custom XML or HTML tags for UI behavior. Follow the visible-handoff rules in [runtime-debugging.md](./references/runtime-debugging.md), then stop and wait for the user's completion signal before continuing.
+7. Ask the user to reproduce the issue using the reproduction handoff in [runtime-debugging.md](./references/runtime-debugging.md). Match the host's real completion mechanic exactly: use the actual button or task action label when one exists, otherwise ask for a short completion reply. Then stop and wait for the user's completion signal before continuing.
 8. Read the active session's NDJSON log file and evaluate every hypothesis as `CONFIRMED`, `REJECTED`, or `INCONCLUSIVE`, citing the relevant log evidence.
 9. Apply a fix only after the logs prove the root cause. Keep instrumentation in place while implementing the fix.
 10. Before the post-fix verification run, verify the current logging process is still alive again. If it has been closed, start a new collector process and adopt its new ready file values before clearing and collecting verification logs.
 11. If restarting the collector changed the active ingest endpoint or port again, update the temporary logging code to replace the stale port before the verification run.
 12. Clear only the active session's current logs again so before/after evidence does not mix.
-13. Ask for a post-fix reproduction run and compare before/after logs. Follow the same visible-handoff rules in [runtime-debugging.md](./references/runtime-debugging.md), then wait for the user's completion signal before continuing.
+13. Ask for a post-fix reproduction run and compare before/after logs. Use the same handoff rules in [runtime-debugging.md](./references/runtime-debugging.md), then wait for the user's completion signal before continuing.
 14. Remove all injected temporary logging code only after logs prove the fix worked and the user confirms the issue is gone. This includes the inserted log calls, debug-only endpoint constants, temporary headers, and any other scaffolding added only for this debugging pass.
 15. If you started the bundled collector for this task, stop it and delete the session artifacts it owns after any final evidence handoff. Use the collector metadata as authoritative: remove the active session's NDJSON log file, ready file, service log file, and any additional paths listed in `ownedArtifacts`, unless the user explicitly asked to keep them. If the scratch directory becomes empty after cleanup, remove it too.
 16. If the fix fails, remove code changes that came from rejected hypotheses, keep useful instrumentation, generate new hypotheses from a different subsystem, and repeat.
@@ -98,9 +98,9 @@ Before the first reproduction handoff, structure the visible assistant output in
 
 1. Hypotheses
 2. Instrumentation plan or applied log points
-3. Reproduction request using official request-user-input UI when available in the current mode, otherwise a plain numbered list
+3. Reproduction request using the reproduction handoff in [runtime-debugging.md](./references/runtime-debugging.md)
 
-Detailed visible-handoff rules live in [runtime-debugging.md](./references/runtime-debugging.md). Apply them to every reproduction or verification request.
+Detailed handoff rules live in [runtime-debugging.md](./references/runtime-debugging.md). Apply them to every reproduction or verification request.
 
 After the user reproduces the issue, continue in this order:
 
