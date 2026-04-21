@@ -355,11 +355,20 @@ After the user reproduces the issue, open the active session log file and analyz
 
 ## Reproduction request
 
-Do not depend on custom XML or HTML tags such as `<reproduction_steps>` for Codex UI behavior. The documented Codex form path is the official request-user-input capability; use that when the current host exposes it. When that form capability is unavailable, send a plain numbered list in regular message text.
+Do not depend on custom XML or HTML tags such as `<reproduction_steps>` for Codex UI behavior. The documented Codex form path is the official request-user-input capability; use that when it is available in the current host mode. When that form capability is unavailable, send a plain numbered list in regular message text.
+
+Visible-handoff requirements:
+
+- The reproduction or verification request must be the last user-visible output in that turn.
+- In Codex-style hosts, do not place required user steps in commentary, progress updates, tool narration, edit summaries that can collapse, or any other internal/disclosure-only surface.
+- If the official request-user-input form is available in the current host mode, make it the final action and then wait.
+- If the host does not support that form in the current mode, send a normal assistant message and make the last section the numbered reproduction or verification steps.
+- If you need to show hypotheses, applied log points, or temporary edits, show them before the handoff.
+- After sending the handoff, stop. Do not continue into log analysis, implementation, or extra tool work until the user completes the requested action.
 
 Preferred form-based request when supported:
 
-- Use the host's official request-user-input flow for a short reproduction prompt.
+- Use the host's official request-user-input flow for a short reproduction prompt when it is available in the current mode.
 - Keep the prompt to 1-3 short questions or confirmation actions because that is the documented form shape.
 - Match the host's actual completion mechanic exactly instead of inventing synthetic labels.
 
@@ -376,6 +385,8 @@ Examples:
 - Button-based host: `Press Proceed when done.`
 - Task-based host: `Mark the task as fixed when done.`
 - Chat-only host: `Reply with "done" when the reproduction completes.`
+
+Apply the same visible-handoff rules to post-fix verification prompts.
 
 ## Log analysis standard
 
