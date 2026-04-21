@@ -3,10 +3,10 @@
 Expose this repository to local agent runtimes through a single symlink:
 
 ```text
-~/.agents/junerdd-skill -> <repo>/skills
+~/.agents/skills/junerdd-skill -> <repo>/skills
 ```
 
-The goal is to link the repository's `skills/` directory into `~/.agents` without copying files.
+The goal is to link the repository's `skills/` directory into `~/.agents/skills` without copying files.
 
 ## Installation
 
@@ -17,10 +17,10 @@ The goal is to link the repository's `skills/` directory into `~/.agents` withou
 2. Ensure the target parent directory exists:
 
    ```bash
-   mkdir -p ~/.agents
+   mkdir -p ~/.agents/skills
    ```
 
-3. Inspect `~/.agents/junerdd-skill` before changing it.
+3. Inspect `~/.agents/skills/junerdd-skill` before changing it.
    - If it does not exist, continue.
    - If it is already a symlink to `<repo>/skills`, leave it in place.
    - If it is a symlink to some other target, refresh it.
@@ -29,22 +29,22 @@ The goal is to link the repository's `skills/` directory into `~/.agents` withou
 4. Create or refresh the symlink so it points to this repository's `skills/` directory:
 
    ```bash
-   ln -sfn "<repo>/skills" ~/.agents/junerdd-skill
+   ln -sfn "<repo>/skills" ~/.agents/skills/junerdd-skill
    ```
 
 5. Verify the result:
-   - Show the symlink target with `ls -la ~/.agents/junerdd-skill`.
+   - Show the symlink target with `ls -la ~/.agents/skills/junerdd-skill`.
    - Confirm it resolves to `<repo>/skills`.
-   - Confirm at least one skill entry is reachable through the link, for example `~/.agents/junerdd-skill/git-commit/SKILL.md`.
+   - Confirm at least one skill entry is reachable through the link, for example `~/.agents/skills/junerdd-skill/git-commit/SKILL.md`.
 
 ## Updating
 
-If `~/.agents/junerdd-skill` points at an existing local checkout, updates come from updating that checkout. The symlink does not need to be recreated unless the checkout path changes.
+If `~/.agents/skills/junerdd-skill` points at an existing local checkout, updates come from updating that checkout. The symlink does not need to be recreated unless the checkout path changes.
 
 ## Uninstalling
 
 Remove the symlink:
 
 ```bash
-rm ~/.agents/junerdd-skill
+rm ~/.agents/skills/junerdd-skill
 ```
