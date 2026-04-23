@@ -1,40 +1,58 @@
 ---
 name: regression-review
-description: Evaluate how the current code changes may create user-visible behavioral regressions and turn the result into a reviewer-friendly Markdown gate report. Use when reviewing a working tree, staged diff, commit range, or PR and the goal is to decide whether the change should be blocked, discussed, watched, or treated as an intentional visible change during code review.
+description: Perform a scoped, coverage-led review of working tree, staged, commit-range, branch, or PR changes to find user-visible behavioral regressions. Use when Codex must audit code changes for broken or degraded user journeys, changed defaults, loading/error/permission/session behavior, stale data, ordering, retries, duplicate/destructive actions, exported output, emails, CLI output, or other visible behavior, and must write a Markdown report that enumerates all distinct findings discovered within the reviewed scope plus coverage gaps and intentional visible changes.
 ---
 
 # Regression Review
 
 ## Overview
 
-Treat the change set as a code review gate, not as an audit archive. The primary question is whether a reviewer or TL should block the change because users will notice a broken or degraded behavior.
+Treat the change set as a scoped user-visible regression audit with a gate recommendation. The primary job is to enumerate every distinct user-visible regression finding that can be reasonably identified within the reviewed scope, not only the most severe or easiest findings.
 
 Always produce a Markdown report file and a short terminal summary.
 
-Keep the overall recommendation mechanically aligned with the highest-severity unresolved finding. Do not let prose tone drift the gate up or down.
+Keep the overall recommendation mechanically aligned with the highest-severity unresolved finding and the coverage state. Do not let prose tone drift the gate up or down.
 
 ## Set Scope First
 
-- Prefer an explicit scope from the user: working tree, staged changes, last commit, commit range, or branch diff.
-- If the user does not specify scope, compare the current working tree against `HEAD` and state that assumption in the report.
-- If requirements, issue text, or a design doc exist, read them before judging regressions.
+- Prefer an explicit scope from the user: working tree, staged changes, last commit, commit range, branch diff, or PR.
+- If the user does not specify scope, default to staged changes when they exist; otherwise compare the current working tree against `HEAD` and state that assumption in the report.
+- If the requested scope is too large to review completely in one pass, do not silently sample it. Review the highest-risk surfaces first, mark the report `Incomplete`, list the exact files or surfaces not covered, and set the recommendation no lower than `Discuss` unless the uncovered area is demonstrably non-user-visible.
+- If requirements, issue text, a PR description, or a design doc exist, read them before judging regressions.
 - Separate intended product changes from accidental regressions.
+
+## Completeness Contract
+
+- Output every distinct regression finding discovered within the reviewed scope. Do not stop after the top 3.
+- Use `Must-review now` only as a short priority preview. The full findings sections and `Complete Findings Index` must include all findings.
+- Maintain a `Coverage Ledger` that maps every touched user-visible surface to one of:
+  - `Finding F#`
+  - `Intentional I#`
+  - `Reviewed - no user-visible regression found`
+  - `Not user-visible`
+  - `Not covered`
+- Do not drop lower-severity user-visible changes. Put them in `Watch` or `Intentional Changes` when they are real but not blocking.
+- If a candidate issue is investigated and dismissed, record the dismissal in the evidence appendix when it explains coverage or prevents duplicate review.
+- If token budget, runtime setup, missing credentials, or diff size prevents complete coverage, say exactly where coverage stopped. A partial review must not be presented as complete.
 
 ## Output Rules
 
 - Always write a Markdown file.
 - If the repo already has an obvious location for reviews or reports, follow that convention.
 - Otherwise write to `tmp/reviews/YYYY-MM-DD-user-visible-regression-report.md`.
-- End with a short terminal summary that includes the report path, the gate recommendation, and the top risks.
+- End with a short terminal summary that includes the report path, the gate recommendation, completion status, counts by action, and the top risks.
 - Structure the report in this order:
+  - `Scope`
   - `Gate Snapshot`
+  - `Complete Findings Index`
   - `Block`
   - `Discuss`
   - `Watch`
   - `Intentional Changes`
+  - `Coverage Ledger`
   - `Evidence Appendix`
-- Keep the primary view optimized for code review reading speed.
-- Do not use wide summary tables as the main presentation shape.
+- Keep the primary view optimized for review reading speed, but do not omit findings for brevity.
+- Do not use wide summary tables as the main presentation shape for finding details. Tables are appropriate for the findings index, coverage ledger, and evidence appendix.
 
 ## Review Actions
 
@@ -60,67 +78,79 @@ Use the top-level `Recommendation` field in `Gate Snapshot` with this exact mapp
 
 - If any unresolved finding is `Block`, the report recommendation MUST be `Block`.
 - Else if any unresolved finding is `Discuss`, the report recommendation MUST be `Discuss`.
+- Else if coverage is incomplete for a user-visible or unknown-impact surface, the report recommendation MUST be `Discuss`.
 - Else if any unresolved finding is `Watch`, the report recommendation MUST be `Pass with caveat`.
 - Else use `Pass`.
 
 Additional rules:
 
 - Do not write `Pass with caveat` when a `Discuss` item is still open.
-- Do not write `Discuss` when the body contains no `Discuss` items.
+- Do not write `Discuss` when the body contains no `Discuss` items and no incomplete user-visible coverage.
 - If a suspected issue lacks enough proof to justify `Block`, downgrade the finding to `Discuss` instead of keeping `Block` with hand-wavy evidence.
 - If the report contains both `Block` and `Discuss`, keep both sections, but the top-level recommendation remains `Block`.
 
 ## What Counts As One Finding
 
-- Count one item per distinct user-facing outcome, not per file, function, or root cause.
+- Count one item per distinct user-facing outcome, not per file, function, root cause, or code smell.
 - Merge multiple code changes that lead to the same user-visible symptom.
-- Split items only when different user journeys are affected in materially different ways.
+- Split items when different user journeys are affected in materially different ways.
 - Focus on findings that matter during review:
   - broken or degraded task completion
   - changed defaults or fallback behavior
   - loading, empty, or error state changes
   - permission or session behavior changes
-  - stale data, cache, retry, or ordering changes
-  - destructive or duplicate actions
-  - output changes in emails, generated files, CLI output, or exported data
+  - stale data, cache, retry, polling, or ordering changes
+  - destructive, repeated, or duplicate actions
+  - accessibility, keyboard, focus, or responsive behavior changes that users can notice
+  - output changes in emails, generated files, CLI output, API responses, persisted data, or exports
 
 ## Evidence Standard
 
 - Prefer the strongest feasible evidence for the affected surface, not one fixed verification mode.
 - Runtime checks are valuable, but they are not mandatory when static path tracing or output inspection already provides strong evidence.
-- For frontend behavior, use the evidence that best matches the risk: code-path tracing, generated output inspection, logs, focused tests, or runtime repro when needed.
-- For non-UI changes, inspect outputs, fixtures, generated files, CLI responses, logs, and focused tests.
+- For frontend behavior, use the evidence that best matches the risk: code-path tracing, generated output inspection, logs, focused tests, screenshots, or runtime repro when needed.
+- For non-UI changes, inspect outputs, fixtures, generated files, CLI responses, API responses, logs, and focused tests.
 - If evidence is missing, lower confidence and say so plainly.
 - Separate verified facts from inferred consequences.
 - Do not present speculation as fact.
 - Do not treat `eslint`, `typecheck`, or passing unrelated tests as proof that a user-visible regression is disproven. They are hygiene evidence only.
-- When a spec, issue, or design doc exists, use it to judge intent, but do not treat it as proof that the runtime/output behavior is still correct.
+- When a spec, issue, or design doc exists, use it to judge intent, but do not treat it as proof that the runtime or output behavior is still correct.
 
 ## Workflow
 
 1. Define the comparison baseline.
-   - Use `git diff`, `git diff --staged`, `git show`, or an explicit range.
-   - Record the exact scope in the report.
-2. Map affected user surfaces.
-   - Identify routes, pages, API consumers, commands, scheduled jobs, config defaults, and feature flags touched by the diff.
-   - Build a short list of the user journeys most relevant to review risk.
-3. Trace the behavior delta.
-   - Compare before and after behavior for each journey.
-   - Look for removed guards, changed branching, altered ordering, serialization changes, loading changes, and error-path changes.
+   - Use the user-specified scope exactly when provided.
+   - Otherwise use staged changes if present; if nothing is staged, use working tree against `HEAD`.
+   - Record the exact scope and baseline in the report.
+2. Build a diff inventory.
+   - List touched files and classify each as user-visible surface, user-visible dependency, test-only, docs-only, generated, config, or unknown.
+   - Use repository structure, route maps, exports, commands, schedules, feature flags, and call sites to avoid missing indirect user-visible paths.
+3. Build the coverage ledger before writing findings.
+   - Identify every route, page, component, API consumer, command, job, config default, flag path, email/export/output, and persisted side effect touched by the diff.
+   - Add each surface to the ledger even if it later has no finding.
+4. Trace behavior deltas for every ledger surface.
+   - Compare before and after behavior for each surface.
+   - Look for removed guards, changed branching, altered ordering, serialization changes, loading changes, empty states, error paths, retries, cache keys, stale data, session/auth checks, and output formatting.
    - For refactors, wrappers, adapters, shared utilities, or "just telemetry" changes, explicitly trace what now supplies the user-visible input, what still enforces guards, and what produces the final output.
-4. Gather proof and code pointers.
-   - Collect the strongest runtime or output evidence available.
+5. Gather proof and code pointers.
+   - Collect the strongest runtime, output, test, log, fixture, screenshot, or code-path evidence available.
    - Trace each finding back to concrete code lines.
-5. Classify for review action.
-   - Decide whether the reviewer should `Block`, `Discuss`, `Watch`, or mark the change `Intentional`.
+6. De-duplicate and classify.
+   - Merge candidates with the same user-facing outcome.
    - Rank within each section by user impact first, confidence second.
-6. Write the report.
-   - Use `references/report-template.md`.
-   - Lead with the gate recommendation and the top items a reviewer should open first.
+7. Write the report from `references/report-template.md`.
+   - Include all findings in `Complete Findings Index` and the matching action sections.
+   - Put priority highlights in `Must-review now`, but never use that list as the full result.
+8. Run the report self-check.
+   - Every touched user-visible surface is present in `Coverage Ledger`.
+   - Every finding in the action sections appears in `Complete Findings Index`.
+   - Every `Finding F#` in `Coverage Ledger` has a matching card.
+   - Every `Not covered` row has a reason and a concrete next step.
+   - The recommendation matches the mapping rules.
 
 ## Card Format
 
-Each risk should be written as a short review card, not a spreadsheet row.
+Each risk should be written as a short review card, not a spreadsheet row. Repeat the card format for every finding in the section; do not cap sections at one item.
 
 Use this shape:
 
@@ -150,26 +180,31 @@ Block until the guard is restored or equivalent idempotency is proven elsewhere.
 
 ## Writing Rules
 
-- Start with the gate decision, not with counts.
+- Start with the gate decision and completion status.
 - `Gate Snapshot` should fit on one screen when possible.
 - `Gate Snapshot` should usually include:
   - `Recommendation`
+  - `Completion`
   - `Why now`
   - `Must-review now`
+  - `Findings count`
   - `Coverage confidence`
   - `Biggest blind spot`
-- Limit `Must-review now` to the top 3 items.
+- Limit `Must-review now` to the top 3 items, and explicitly point to `Complete Findings Index` for the full list.
 - In each review card, keep the first sentence about user impact, not code mechanics.
 - Use exactly 1 or 2 links under `Look here first`.
 - Put the full causal chain in `Evidence Appendix`, not in the main card.
 - Use absolute file paths when the environment supports clickable local links. Include line anchors when available, for example `[checkout.tsx](/abs/path/app/checkout.tsx#L128)` or `[checkout.tsx](/abs/path/app/checkout.tsx:128)`.
 - `Intentional Changes` should be compact and easy to skim.
+- `Coverage Ledger` must include every reviewed user-visible surface, not just surfaces with findings.
 - `Evidence Appendix` may use small tables.
 - If no user-visible regressions are found, still write the report:
   - Say the recommendation is `Pass` or `Pass with caveat`
+  - Include an empty `Complete Findings Index`
+  - Include the full `Coverage Ledger`
   - State the strongest blind spot
   - Document what was verified
-- If the report is based mainly on static reasoning, say that plainly in both `Gate Snapshot` and `Coverage`.
+- If the report is based mainly on static reasoning, say that plainly in both `Gate Snapshot` and `Coverage Ledger`.
 - When evidence is mixed, write the verified code-path facts first, then the inferred user impact second.
 
 ## Behavior-Preserving Refactor Checklist
@@ -185,7 +220,7 @@ When the diff centralizes behavior behind a shared helper, adapter, wrapper, mid
 For any user-visible flow, explicitly compare:
 
 - user-visible input source
-- transformed/intermediate payload
+- transformed or intermediate payload
 - final output or side effect
 - gates that must still run before the effect happens
 
@@ -196,7 +231,8 @@ If those layers are no longer aligned, treat that as a regression lead even befo
 - Do not call a deliberate product change a regression just because users will notice it.
 - Do not mistake "tests passed" for "user impact disproven".
 - Do not overcount the same symptom across multiple files.
-- If the diff is large, cover the highest-risk journeys first and say where coverage stops.
+- Do not hide lower-severity issues because stronger issues already exist.
+- Do not claim complete coverage unless the coverage ledger accounts for every touched user-visible or unknown-impact surface.
 - If a runtime check cannot be performed, say so and downgrade confidence rather than hiding the gap.
 - Do not discard a strong static regression lead just because the change was introduced during a refactor or telemetry cleanup.
 - Do not promote a finding to `Block` unless the user-visible breakage itself, not just the code smell, is strongly supported.

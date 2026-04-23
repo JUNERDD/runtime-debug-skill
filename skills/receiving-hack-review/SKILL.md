@@ -1,61 +1,80 @@
 ---
 name: receiving-hack-review
-description: Use when Codex is given a `hack-review` report, PR feedback derived from one, or a request to address `Block`, `Discuss`, `Watch`, or `Intentional Exceptions` items and must verify whether the reported shortcut or ownership problem still applies before changing code.
+description: Consume a coverage-led `hack-review` Markdown report, PR feedback derived from one, or a request to address `Block`, `Discuss`, `Watch`, `Intentional Exceptions`, `Complete Hack-Risk Index`, `Ownership Coverage Ledger`, `Not covered`, or coverage-gap items. Use when Codex must verify whether each reported shortcut, ownership problem, intentional exception, and uncovered implementation boundary still applies before changing code, then fix, disprove, narrow, confirm, or carry forward every item with evidence.
 ---
 
 # Receiving Hack Review
 
 ## Overview
 
-Use this skill after `hack-review` has produced a gate report. Treat the report as an evidence-backed design review artifact, not as an instruction list to execute blindly.
+Use this skill after `hack-review` has produced a coverage-led report. Treat the report as an evidence-backed design review artifact, not as an instruction list to execute blindly.
+
+The primary job is to account for every `F#` finding, every `I#` intentional exception, and every uncovered implementation-relevant or unknown boundary before claiming the hack gate is resolved.
 
 ## Skill Boundary
 
-- Use `hack-review` to create the report.
+- Use `hack-review` to create or refresh the report.
 - Use `receiving-hack-review` to consume the report and decide what to do next.
 - Use `regression-review` instead when the concern is user-visible behavior rather than implementation shortcuts.
 - Use `receiving-code-review` instead when the feedback is general code review rather than a hack-risk gate.
 
-## Core Principle
+## Core Principles
 
-Verify the current ownership model before implementing a fix.
+Build a disposition ledger before editing code.
 
 Keep gate integrity aligned with evidence:
 
+- Treat `Complete Hack-Risk Index` as the enumeration source for findings.
+- Treat `Ownership Coverage Ledger` as the enumeration source for reviewed, intentional, non-relevant, and uncovered implementation boundaries.
+- Treat `Not covered` rows on implementation-relevant or unknown boundaries as unresolved gate items until they are covered, regenerated, or explicitly accepted as out of scope.
+- Verify the current ownership model before implementing a fix.
 - Do not dismiss a `Block` item without stronger counter-evidence.
 - Do not "fix" an `Intentional Exceptions` item into a sweeping refactor unless product or architecture intent changed.
 - Do not treat lint, typecheck, or unrelated passing tests as proof that a shortcut is gone.
 - Do not remove necessary edge guards merely because the report called out a nearby fallback. Confirm which boundary actually owns the invariant first.
+- Do not claim completion while any indexed finding, intentional exception, or coverage gap lacks a disposition.
 
 ## Response Pattern
 
 WHEN receiving a hack review report:
 
-1. Read the full report, including `Scope`, `Gate Snapshot`, and `Evidence Appendix`.
+1. Read the full report, including `Scope`, `Gate Snapshot`, `Complete Hack-Risk Index`, `Block`, `Discuss`, `Watch`, `Intentional Exceptions`, `Ownership Coverage Ledger`, `Evidence Appendix`, and `Report Self-Check` when present.
 2. Confirm the report still applies to the exact scoped change set the user asked to review.
-3. Restate each finding as a concrete design liability, not as a code edit.
-4. Verify the finding against current code, outputs, tests, runtime behavior, and ownership boundaries.
-5. Decide the disposition: fix, disprove, narrow, clarify, or confirm as intentional.
-6. Address findings in gate order and verify each change before moving on.
-7. Refresh the gate by rerunning `hack-review` or updating the reviewer with concrete evidence.
+3. Build a disposition ledger before changing code:
+   - Add every `F#` from `Complete Hack-Risk Index`.
+   - Add every finding card from `Block`, `Discuss`, and `Watch`.
+   - Add every `I#` from `Intentional Exceptions`.
+   - Add every `Ownership Coverage Ledger` row whose status is `Not covered`, `Finding F#`, `Intentional Exception I#`, or unknown.
+   - Add any mismatch between the index, action sections, and coverage ledger as an intake problem.
+4. Stop and regenerate or clarify the report before implementing when scope, baseline, report completion, ownership context, or finding enumeration is stale or inconsistent.
+5. Restate each `F#` as a concrete design liability, not as a code edit.
+6. Verify each item against current code, outputs, tests, runtime behavior, search results, and ownership boundaries.
+7. Decide each disposition: fix, disprove, narrow, downgrade, confirm intentional exception, close coverage gap, keep coverage gap open, or ask for clarification.
+8. Address items in gate order and verify each affected boundary before moving on.
+9. End with a short disposition ledger that accounts for every item consumed from the report.
+10. Refresh the gate by rerunning `hack-review` or updating the reviewer with concrete evidence when changes materially alter the implementation strategy or coverage.
 
 ## Intake Checklist
 
 Before changing code, confirm:
 
-- Which scope was reviewed: working tree, staged diff, commit range, branch diff, or a named implementation slice.
+- Which scope was reviewed: working tree, staged diff, commit range, branch diff, PR, or a named implementation slice.
 - Whether that scope matches the user's requested review range exactly.
 - If the user did not specify scope, whether the report was generated from the staged diff.
 - Which baseline the report compares against.
-- Whether the current checkout still matches that scope.
-- Which items are unresolved in `Block`, `Discuss`, and `Watch`.
+- Whether the current checkout still matches that scope and baseline.
+- Whether `Completion` is `Complete within reviewed scope` or `Incomplete`.
+- Whether every `F#` in `Complete Hack-Risk Index` has a matching card in `Block`, `Discuss`, or `Watch`.
+- Whether every `Finding F#` in `Ownership Coverage Ledger` maps to a known finding.
+- Whether every `Intentional Exception I#` in `Ownership Coverage Ledger` maps to an intentional exception entry.
+- Which `Not covered` rows affect implementation-relevant or unknown boundaries.
 - Which incumbent abstraction, invariant owner, or shared boundary the report points to.
 - Which blind spots limit confidence.
 
-If scope, baseline, or owning abstraction is stale or unclear, stop and regenerate or clarify the report before implementing.
+If scope, baseline, completion status, owning abstraction, or item enumeration is stale or unclear, stop and regenerate or clarify the report before implementing.
 If the report was generated from a broader or different range than the user asked for, do not consume it as-is. Regenerate the gate for the correct scope first.
 
-## Handle Each Section
+## Handle Each Item Type
 
 ### `Block`
 
@@ -80,6 +99,8 @@ Treat `Discuss` as "resolve uncertainty before approval."
 - Clarify intent when the change may be a deliberate transition, migration shim, or compatibility layer.
 - Gather the missing proof the report asked for.
 - Prefer focused verification over speculative rewrites.
+- Promote to `Block` if verification proves a serious ownership risk.
+- Downgrade to `Watch` or `Intentional Exception` only with concrete evidence.
 
 ### `Watch`
 
@@ -87,14 +108,26 @@ Treat `Watch` as "note it, then decide whether cheap mitigation is worth it."
 
 - Add a targeted test, owner note, TODO with exit trigger, or follow-up task when the debt matters.
 - Avoid unnecessary churn when the risk is minor and already understood.
+- Keep the item in the final disposition even when no code change is made.
 
 ### `Intentional Exceptions`
 
 Treat `Intentional Exceptions` as protected shortcuts unless evidence says otherwise.
 
-- Confirm scope, owner, and exit condition against the spec, issue, PR description, or user instruction.
+- Confirm scope, owner, and exit condition against the spec, issue, PR description, migration note, or user instruction.
 - Leave the code alone if the exception is deliberate and bounded.
 - Move it back into `Discuss` only when intent is unclear, the exception has grown beyond its stated scope, or the exit condition is gone.
+- Do not refactor the exception away merely to silence the report.
+
+### `Ownership Coverage Ledger`
+
+Treat coverage rows as gate evidence, not background notes.
+
+- For `Finding F#`, verify that the referenced finding is in the disposition ledger.
+- For `Intentional Exception I#`, verify that the intentional exception has been confirmed or challenged.
+- For `Reviewed - no hack-risk found`, leave the row alone unless current code or new evidence contradicts it.
+- For `Not hack-relevant`, challenge the classification if the touched path owns an invariant, abstraction, lifecycle, cache, serializer, permission boundary, adapter, or extension point.
+- For `Not covered`, either perform the missing ownership trace, regenerate the gate for that boundary, or leave it as an open coverage gap with a concrete next step.
 
 ## Verify Common Hack Leads Carefully
 
@@ -122,14 +155,17 @@ Push back when:
 
 - The report was generated for a different scope or stale branch.
 - The report silently widened beyond the user-requested range.
+- The report is incomplete but presents the gate as resolved.
+- The `Complete Hack-Risk Index`, action sections, and `Ownership Coverage Ledger` disagree.
 - The shortcut is a deliberate migration or compatibility layer with a clear owner and exit condition.
 - The alleged impossible-state fallback is actually guarding a real external, legacy, or backward-compatibility boundary.
-- The alleged duplicate abstraction owns a materially different seam.
-- Current runtime or output evidence contradicts the report.
+- The alleged duplicate abstraction owns a materially different boundary.
+- Current runtime, output, search, or ownership evidence contradicts the report.
+- A `Not covered` row requires context, credentials, data, platform access, or runtime setup that is not available in the current environment.
 
 Push back with evidence, not tone:
 
-- Cite the current code path, runtime result, or owning abstraction.
+- Cite the current code path, runtime result, owning abstraction, or search result.
 - State what the report got right and what no longer applies.
 - Say what additional verification would settle the disagreement if proof is still incomplete.
 
@@ -139,12 +175,30 @@ For multi-item reports:
 
 1. Clarify stale or unclear scope first.
 2. Regenerate the report if it does not match the user's exact review range, or if no scope was specified and the report was not based on the staged diff.
-3. Fix or disprove every unresolved `Block` item.
-4. Resolve `Discuss` items with proof or intent clarification.
-5. Decide whether `Watch` items need mitigation now.
-6. Leave `Intentional Exceptions` alone unless intent changed.
-7. Re-run targeted verification for every touched boundary.
-8. Refresh the hack gate if your changes materially altered the implementation strategy.
+3. Build the disposition ledger from `Complete Hack-Risk Index`, action sections, `Intentional Exceptions`, and `Ownership Coverage Ledger`.
+4. Resolve report inconsistencies or stale coverage before code changes.
+5. Fix or disprove every unresolved `Block` item.
+6. Resolve `Discuss` items with proof or intent clarification.
+7. Decide whether `Watch` items need mitigation now.
+8. Confirm or challenge `Intentional Exceptions`.
+9. Close or explicitly carry forward `Not covered` implementation-relevant or unknown boundaries.
+10. Re-run targeted verification for every touched boundary.
+11. Refresh the hack gate if your changes materially altered the implementation strategy or coverage.
+
+## Disposition Ledger Format
+
+Use this shape in the final response or report update when multiple items were consumed:
+
+```md
+| ID / boundary | Original status | Disposition | Evidence | Next action |
+| --- | --- | --- | --- | --- |
+| F1 | Block | Fixed | Invariant now enforced in the normalizer; fallback removed from caller. | None |
+| F2 | Discuss | Narrowed | Extra guard protects a legacy input boundary only. | Note in review |
+| I1 | Intentional Exception | Confirmed | Migration note lists owner and removal trigger. | Leave unchanged |
+| Cache invalidation path | Not covered | Open | Requires integration data not available locally. | Regenerate with staging logs |
+```
+
+Keep it concise, but account for every report item.
 
 ## Response Style
 
@@ -154,7 +208,8 @@ Good:
 
 - `F1 still applies on the current diff. The new fallback is hiding a broken invariant in [file]. Restoring ownership upstream.`
 - `F2 is narrower than reported. The extra guard protects legacy input at the boundary, so downgrading from Block to Watch.`
-- `F3 is real duplicated logic. Reusing the existing serializer instead of keeping parallel mapping.`
+- `I1 is a bounded migration exception with an owner and exit trigger. Leaving it unchanged.`
+- `The cache invalidation boundary was marked Not covered; current local data cannot verify it, so I am carrying it forward with a concrete staging-log check.`
 
 Bad:
 
@@ -165,12 +220,15 @@ Bad:
 ## Common Mistakes
 
 - Treat the report title as the bug instead of the underlying ownership problem.
+- Process only the top items in `Gate Snapshot` and ignore `Complete Hack-Risk Index`.
 - Delete the fallback without fixing who should have prevented the bad state.
 - Keep the symptom patch and add another patch upstream.
 - Replace one duplicated wheel with a different duplicated wheel.
+- Treat `Not covered` rows as harmless notes.
 - Downgrade a `Block` item without stronger evidence.
 - Stop after code changes without rerunning the affected path, ownership trace, or targeted checks.
+- Claim the gate is clean without accounting for every `F#`, `I#`, and open coverage row.
 
 ## Bottom Line
 
-A hack review report is a gate artifact. Consume it the same way a strong reviewer would: verify the current ownership model, preserve the severity semantics, then fix, challenge, narrow, or confirm each finding with evidence.
+A hack review report is a coverage-led gate artifact. Consume it the same way a strong reviewer would: verify the current ownership model, preserve the severity semantics, account for every finding and ownership coverage row, then fix, challenge, narrow, confirm, or carry forward each item with evidence.

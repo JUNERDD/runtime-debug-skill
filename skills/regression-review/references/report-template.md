@@ -1,24 +1,39 @@
-# Review Gate: User-Visible Regression Assessment
+# User-Visible Regression Audit
 
 ## Scope
 
 - Review date: `YYYY-MM-DD`
-- Scope reviewed: `[working tree | staged diff | commit range | branch diff]`
-- Baseline: `[HEAD | commit SHA | branch]`
-- Assumptions: `[state defaults if scope or runtime setup was inferred]`
+- Scope reviewed: `[working tree | staged diff | commit range | branch diff | PR]`
+- Baseline: `[HEAD | commit SHA | branch | PR base]`
+- Completion: `[Complete within reviewed scope | Incomplete - reason]`
+- Assumptions: `[state defaults if scope, runtime setup, credentials, platform, or environment was inferred]`
 
 ## Gate Snapshot
 
 - Recommendation: `[Block | Discuss | Pass with caveat | Pass]`
+- Completion: `[Complete within reviewed scope | Incomplete - exact uncovered area]`
 - Why now: `[one sentence that explains the review decision]`
-- Must-review now:
-  1. `F1` `[short title]`
-  2. `F2` `[short title]`
-  3. `F3` `[short title]`
+- Must-review now: `[top 1-3 items only; full list is in Complete Findings Index]`
+  1. `F#` `[short title]`
+  2. `F#` `[short title]`
+  3. `F#` `[short title]`
+- Findings count: `Block [n] | Discuss [n] | Watch [n] | Intentional [n]`
 - Coverage confidence: `[high | medium | low]`
-- Biggest blind spot: `[short phrase]`
+- Biggest blind spot: `[short phrase, or None identified]`
+
+## Complete Findings Index
+
+If no findings exist, write `No user-visible regression findings identified in the reviewed scope.`
+Otherwise add one row for every `F#` finding in the report.
+
+| ID | Action | Surface | User-visible outcome | Confidence |
+| --- | --- | --- | --- | --- |
+| `F1` | `[Block | Discuss | Watch]` | `[route, command, API output, export, email, etc.]` | `[one-line outcome]` | `[high | medium | low]` |
 
 ## Block
+
+If none exist, write `None.`
+Otherwise repeat this card for every `Block` finding. Continue numbering across all finding sections as needed.
 
 ### F1 Block - [Short title]
 
@@ -43,6 +58,9 @@ Reviewer action:
 
 ## Discuss
 
+If none exist, write `None.`
+Otherwise repeat this card for every `Discuss` finding. Continue numbering across all finding sections as needed.
+
 ### F2 Discuss - [Short title]
 
 User impact: `[what users may notice]`
@@ -66,6 +84,9 @@ Reviewer action:
 
 ## Watch
 
+If none exist, write `None.`
+Otherwise repeat this card for every `Watch` finding. Continue numbering across all finding sections as needed.
+
 ### F3 Watch - [Short title]
 
 User impact: `[minor or narrower visible effect]`
@@ -88,17 +109,33 @@ Reviewer action:
 
 ## Intentional Changes
 
+If none exist, write `None.`
+
 - `I1` `[short visible change]` - `[why it appears intentional]` - `[link](/abs/path/file.ts#L10)`
+
+## Coverage Ledger
+
+Every touched user-visible or unknown-impact surface must appear here, including surfaces with no findings.
+
+| Surface / path | Touched files or entry points | Status | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| `[surface]` | `[file or entry point links]` | `[Finding F# | Intentional I# | Reviewed - no user-visible regression found | Not user-visible | Not covered]` | `[short result]` | `[static trace, test, runtime check, fixture, or reason not covered]` |
 
 ## Evidence Appendix
 
-### Coverage
+### Diff Inventory
 
-| Area | Status | Note |
+| File or area | Classification | User-visible path considered |
 | --- | --- | --- |
-| Runtime verification | `[done | partial | not done]` | `[what was actually executed]` |
-| Platform coverage | `[broad | partial | narrow]` | `[desktop, mobile, locale, auth state, browser, CLI, etc.]` |
-| Test coverage | `[strong | partial | weak]` | `[tests run or missing]` |
+| `[path]` | `[surface | dependency | config | test-only | docs-only | generated | unknown]` | `[route, command, output, API, none, or unknown]` |
+
+### Candidate Sweep Log
+
+Use this section for meaningful candidates that were investigated and dismissed, or for duplicate candidates merged into another finding. Omit trivial unchanged paths.
+
+| Candidate | Decision | Reason |
+| --- | --- | --- |
+| `[candidate behavior]` | `[dismissed | merged into F# | intentional I#]` | `[evidence or reasoning]` |
 
 ### Verification Commands
 
@@ -109,12 +146,20 @@ Reviewer action:
 
 | ID | Role | Link | Why it matters |
 | --- | --- | --- | --- |
-| F1 | entry | `[submit handler](/abs/path/file.ts#L10)` | `[where the journey starts]` |
-| F1 | behavior | `[guard removed](/abs/path/file.ts#L42)` | `[where the change happens]` |
-| F1 | output | `[render path](/abs/path/file.tsx#L88)` | `[where the user-visible result appears]` |
+| `F1` | `entry` | `[submit handler](/abs/path/file.ts#L10)` | `[where the journey starts]` |
+| `F1` | `behavior` | `[guard removed](/abs/path/file.ts#L42)` | `[where the change happens]` |
+| `F1` | `output` | `[render path](/abs/path/file.tsx#L88)` | `[where the user-visible result appears]` |
 
 ### Blind Spots
 
 | Area | Risk introduced by the blind spot | What would resolve it |
 | --- | --- | --- |
 | `[unverified path]` | `[how this limits the review decision]` | `[specific next verification step]` |
+
+### Report Self-Check
+
+- `[yes | no]` Every touched user-visible or unknown-impact surface appears in `Coverage Ledger`.
+- `[yes | no]` Every finding in an action section appears in `Complete Findings Index`.
+- `[yes | no]` Every `Finding F#` ledger row has a matching card.
+- `[yes | no]` Every `Not covered` row has a reason and next verification step.
+- `[yes | no]` Recommendation follows the mapping rules from the skill.

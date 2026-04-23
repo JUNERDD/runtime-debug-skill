@@ -245,7 +245,7 @@ python3 skills/debug/scripts/local_log_collector/main.py \
 
 ### `hack-review`
 
-[`skills/hack-review/`](./skills/hack-review/) reviews whether an implementation is relying on hack-like tactics instead of sound ownership and abstraction boundaries. It produces a reviewer-facing gate report rather than a vague smell list.
+[`skills/hack-review/`](./skills/hack-review/) reviews whether an implementation is relying on hack-like tactics instead of sound ownership and abstraction boundaries. It produces a coverage-led reviewer report that enumerates all distinct hack-risk findings discovered within scope, records intentional exceptions, and marks uncovered ownership boundaries explicitly.
 
 Install:
 
@@ -258,6 +258,7 @@ Best for:
 - identifying impossible-state fallbacks that hide a broken invariant
 - flagging symptom-masking patches that do not fix the root cause
 - catching duplicate abstractions or parallel wheels when a stable boundary already exists
+- showing which touched ownership boundaries were reviewed, skipped, or left uncovered
 
 Key entry points:
 
@@ -267,7 +268,7 @@ Key entry points:
 
 ### `receiving-hack-review`
 
-[`skills/receiving-hack-review/`](./skills/receiving-hack-review/) consumes a `hack-review` report and decides whether each finding still applies, should be fixed, should be challenged, or is actually a bounded intentional exception.
+[`skills/receiving-hack-review/`](./skills/receiving-hack-review/) consumes a `hack-review` report and builds a disposition ledger for every finding, intentional exception, and open ownership coverage gap before deciding whether to fix, challenge, confirm, or carry it forward.
 
 Install:
 
@@ -280,6 +281,7 @@ Best for:
 - re-checking that a hack report matches the exact requested review scope
 - fixing ownership problems without mechanically deleting necessary guards
 - narrowing or disproving hack findings with stronger code-path evidence
+- closing or explicitly carrying forward `Not covered` ownership boundaries from the coverage ledger
 
 Key entry points:
 
@@ -288,7 +290,7 @@ Key entry points:
 
 ### `regression-review`
 
-[`skills/regression-review/`](./skills/regression-review/) reviews whether the current change set introduces user-visible behavioral regressions. It writes a reviewer-facing gate report organized around `Block`, `Discuss`, `Watch`, and `Intentional Changes`.
+[`skills/regression-review/`](./skills/regression-review/) reviews whether the current change set introduces user-visible behavioral regressions. It writes a coverage-led reviewer report that enumerates all distinct findings discovered within scope, records intentional visible changes, and marks uncovered surfaces explicitly.
 
 Install:
 
@@ -300,7 +302,7 @@ Best for:
 
 - checking whether a refactor or feature work breaks user-facing flows
 - auditing changed defaults, loading states, retries, ordering, or exported output
-- writing a review artifact that keeps severity aligned with the strongest unresolved finding
+- writing a review artifact that keeps severity aligned with the strongest unresolved finding while showing full reviewed coverage
 
 Key entry points:
 
@@ -310,7 +312,7 @@ Key entry points:
 
 ### `receiving-regression-review`
 
-[`skills/receiving-regression-review/`](./skills/receiving-regression-review/) consumes a `regression-review` report and decides whether each finding still applies, should be fixed, should be challenged, or should remain as an intentional product change.
+[`skills/receiving-regression-review/`](./skills/receiving-regression-review/) consumes a `regression-review` report and builds a disposition ledger for every finding, intentional visible change, and open coverage gap before deciding whether to fix, challenge, confirm, or carry it forward.
 
 Install:
 
@@ -323,6 +325,7 @@ Best for:
 - re-checking a regression gate against the current diff and baseline
 - fixing only proven user-visible regressions instead of blindly following review comments
 - separating real regressions from intentional product deltas with stronger evidence
+- closing or explicitly carrying forward `Not covered` user-visible surfaces from the coverage ledger
 
 Key entry points:
 

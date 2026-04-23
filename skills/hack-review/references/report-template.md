@@ -1,24 +1,39 @@
-# Review Gate: Hack-Risk Assessment
+# Hack-Risk Audit
 
 ## Scope
 
 - Review date: `YYYY-MM-DD`
-- Scope reviewed: `[working tree | staged diff | commit range | branch diff | implementation slice]`
+- Scope reviewed: `[working tree | staged diff | commit range | branch diff | PR | implementation slice]`
 - Baseline: `[HEAD | commit SHA | branch | design doc | existing abstraction]`
-- Assumptions: `[if scope was not specified, say that the review defaulted to the staged diff; record any ownership or runtime assumptions separately]`
+- Completion: `[Complete within reviewed scope | Incomplete - reason]`
+- Assumptions: `[if scope, ownership, runtime setup, credentials, or architecture context was inferred]`
 
 ## Gate Snapshot
 
 - Recommendation: `[Block | Discuss | Pass with caveat | Pass]`
+- Completion: `[Complete within reviewed scope | Incomplete - exact uncovered boundary]`
 - Why now: `[one sentence that explains the review decision]`
-- Must-review now:
-  1. `F1` `[short title]`
-  2. `F2` `[short title]`
-  3. `F3` `[short title]`
+- Must-review now: `[top 1-3 items only; full list is in Complete Hack-Risk Index]`
+  1. `F#` `[short title]`
+  2. `F#` `[short title]`
+  3. `F#` `[short title]`
+- Findings count: `Block [n] | Discuss [n] | Watch [n] | Intentional [n]`
 - Coverage confidence: `[high | medium | low]`
-- Biggest blind spot: `[short phrase]`
+- Biggest blind spot: `[short phrase, or None identified]`
+
+## Complete Hack-Risk Index
+
+If no findings exist, write `No hack-risk findings identified in the reviewed scope.`
+Otherwise add one row for every `F#` finding in the report.
+
+| ID | Action | Boundary / surface | Structural liability | Confidence |
+| --- | --- | --- | --- | --- |
+| `F1` | `[Block | Discuss | Watch]` | `[helper, adapter, store, lifecycle path, command, etc.]` | `[one-line liability]` | `[high | medium | low]` |
 
 ## Block
+
+If none exist, write `None.`
+Otherwise repeat this card for every `Block` finding. Continue numbering across all finding sections as needed.
 
 ### F1 Block - [Short title]
 
@@ -43,6 +58,9 @@ Reviewer action:
 
 ## Discuss
 
+If none exist, write `None.`
+Otherwise repeat this card for every `Discuss` finding. Continue numbering across all finding sections as needed.
+
 ### F2 Discuss - [Short title]
 
 Engineering impact: `[what can drift, split, or become misleading]`
@@ -66,6 +84,9 @@ Reviewer action:
 
 ## Watch
 
+If none exist, write `None.`
+Otherwise repeat this card for every `Watch` finding. Continue numbering across all finding sections as needed.
+
 ### F3 Watch - [Short title]
 
 Engineering impact: `[narrower debt or bounded shortcut]`
@@ -88,18 +109,33 @@ Reviewer action:
 
 ## Intentional Exceptions
 
-- `I1` `[short shortcut]` - `[why it appears deliberate and bounded]` - `[link](/abs/path/file.ts#L10)`
+If none exist, write `None.`
+
+- `I1` `[short shortcut]` - `[why it appears deliberate and bounded]` - `[owner or exit condition]` - `[link](/abs/path/file.ts#L10)`
+
+## Ownership Coverage Ledger
+
+Every touched implementation-relevant or unknown boundary must appear here, including boundaries with no findings.
+
+| Boundary / path | Touched files or entry points | Status | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| `[boundary]` | `[file or entry point links]` | `[Finding F# | Intentional Exception I# | Reviewed - no hack-risk found | Not hack-relevant | Not covered]` | `[short result]` | `[ownership trace, search, runtime check, fixture, or reason not covered]` |
 
 ## Evidence Appendix
 
-### Coverage
+### Diff Inventory
 
-| Area | Status | Note |
+| File or area | Classification | Boundary considered |
 | --- | --- | --- |
-| Runtime verification | `[done | partial | not done]` | `[what was actually executed]` |
-| Ownership trace | `[strong | partial | weak]` | `[which invariant owners or abstractions were traced]` |
-| Existing abstraction search | `[done | partial | not done]` | `[what incumbent helpers or wrappers were checked]` |
-| Test coverage | `[strong | partial | weak]` | `[tests run or missing]` |
+| `[path]` | `[boundary | dependency | config | test-only | docs-only | generated | unknown]` | `[helper, service, adapter, store, cache, lifecycle, none, or unknown]` |
+
+### Candidate Sweep Log
+
+Use this section for meaningful candidates that were investigated and dismissed, or for duplicate candidates merged into another finding. Omit trivial unchanged paths.
+
+| Candidate | Decision | Reason |
+| --- | --- | --- |
+| `[candidate shortcut]` | `[dismissed | merged into F# | intentional I#]` | `[evidence or reasoning]` |
 
 ### Verification Commands
 
@@ -110,12 +146,20 @@ Reviewer action:
 
 | ID | Role | Link | Why it matters |
 | --- | --- | --- | --- |
-| F1 | incumbent | `[existing abstraction](/abs/path/file.ts#L10)` | `[where ownership used to live]` |
-| F1 | shortcut | `[new fallback](/abs/path/file.ts#L42)` | `[where the hack enters]` |
-| F1 | sibling path | `[other caller](/abs/path/file.tsx#L88)` | `[who still depends on the incumbent path]` |
+| `F1` | `incumbent` | `[existing abstraction](/abs/path/file.ts#L10)` | `[where ownership used to live]` |
+| `F1` | `shortcut` | `[new fallback](/abs/path/file.ts#L42)` | `[where the hack enters]` |
+| `F1` | `sibling path` | `[other caller](/abs/path/file.tsx#L88)` | `[who still depends on the incumbent path]` |
 
 ### Blind Spots
 
 | Area | Risk introduced by the blind spot | What would resolve it |
 | --- | --- | --- |
-| `[unverified path]` | `[how this limits the review decision]` | `[specific next verification step]` |
+| `[unverified boundary]` | `[how this limits the review decision]` | `[specific next verification step]` |
+
+### Report Self-Check
+
+- `[yes | no]` Every touched implementation-relevant or unknown boundary appears in `Ownership Coverage Ledger`.
+- `[yes | no]` Every finding in an action section appears in `Complete Hack-Risk Index`.
+- `[yes | no]` Every `Finding F#` ledger row has a matching card.
+- `[yes | no]` Every `Not covered` row has a reason and next verification step.
+- `[yes | no]` Recommendation follows the mapping rules from the skill.
