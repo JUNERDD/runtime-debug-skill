@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grill Me"
+  short_description: "Deeply stress-test a plan with logged Q&A"
+  default_prompt: "Use $grill-me to walk this design tree one question at a time, expose assumptions, alternatives, tradeoffs, failure modes, rollout and rollback gaps, keep a Markdown Q&A log in sync, and finish with a planning-ready outcome brief."
