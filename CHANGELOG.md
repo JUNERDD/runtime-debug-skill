@@ -4,6 +4,16 @@ All notable changes to this skill collection are documented in this file.
 
 This project uses SemVer for the collection version. GitHub release tags use the `vX.Y.Z` form.
 
+## [0.2.14] - 2026-09-08
+
+### Changed
+
+- Honor existing user authorization across planning, review, repair, code slimming, and commit workflows without redundant approval rounds.
+- Make review assessment and implementation delegation proportional to scope, and reuse verification only when it still applies to the final code and inputs.
+- Extend review report validators and regression tests for coordinator ownership and authorized review-to-repair handoffs.
+- Interpret debug reproduction replies from conversation context while retaining runtime evidence checks.
+- Synchronize README and English/Chinese website catalog guidance with the updated skill workflows.
+
 ## [0.2.13] - 2026-09-03
 
 ### Changed
