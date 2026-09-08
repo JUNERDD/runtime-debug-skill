@@ -86,6 +86,7 @@ def resolution_report(
     chain_completion: str = "Terminal",
     emit_assignments: bool = True,
     emit_code_changes: bool = True,
+    coordinator: bool = False,
 ) -> str:
     source_trigger = "initial" if source_generation == 0 else "post-implementation"
     source_parent_id = "None" if source_generation == 0 else PARENT_RESOLUTION_ID
@@ -103,18 +104,26 @@ def resolution_report(
     coding_stage = "Required" if actionable else "Not required - no actionable items"
     coding_subagent = "D1 launched" if actionable else "Not required"
     coding_mode = "Single coding agent" if actionable else "Not applicable"
+    assessment = (
+        "Coordinator assessment - one cohesive behavior path"
+        if coordinator else "V0 launched"
+    )
+    coding_agent = "Coordinator" if coordinator else "D1"
+    if actionable and coordinator:
+        coding_subagent = "Coordinator implementation - current context covers the localized fix"
+        coding_mode = "Coordinator"
     coding_assignments = (
-        """| Coding agent | Actionable item IDs | File ownership | Expected result | Required verification | Status |
+        f"""| Coding agent | Actionable item IDs | File ownership | Expected result | Required verification | Status |
 | --- | --- | --- | --- | --- | --- |
-| `D1` | `F1` | `checkout.py` | `checkout behavior matches the authoritative contract` | `focused checkout test` | `Complete` |"""
+| `{coding_agent}` | `F1` | `checkout.py` | `checkout behavior matches the authoritative contract` | `focused checkout test` | `Complete` |"""
         if actionable and emit_assignments
         else "None."
     )
     changed = implementation in {"Implemented", "Verified"}
     code_changes = (
-        """| Item ID | Coding agent | Changed files | Focused change | Unrelated churn check |
+        f"""| Item ID | Coding agent | Changed files | Focused change | Unrelated churn check |
 | --- | --- | --- | --- | --- |
-| `F1` | `D1` | `checkout.py` | `align checkout behavior with the contract` | `clean` |"""
+| `F1` | `{coding_agent}` | `checkout.py` | `align checkout behavior with the contract` | `clean` |"""
         if changed and emit_code_changes
         else "None."
     )
@@ -162,7 +171,7 @@ def resolution_report(
 
 ## Re-Review Orchestration
 
-- Assessment subagent: `V0 launched`
+- Assessment subagent: `{assessment}`
 - Orchestration decision: `Single verifier`
 - Decision confidence: `high`
 - Decision rationale: `One complete checkout chain.`
@@ -417,6 +426,17 @@ class ValidateDispositionReportTests(unittest.TestCase):
         result = self.run_validator(resolution_report(), source_report())
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
+    def test_accepts_explicit_receiving_after_review_only_handoff(self) -> None:
+        source = build_code_review_report(issue_key=ISSUE_KEY).replace(
+            "Automatic receiving permitted: `Yes`", "Automatic receiving permitted: `No`"
+        )
+        report = resolution_report(coordinator=True).replace(
+            "Continuation authority: `Initial receiving handoff`",
+            "Continuation authority: `Explicit current user instruction`",
+        )
+        result = self.run_validator(report, source)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
     def test_rejects_intentional_fix_action(self) -> None:
         result = self.run_validator(
             resolution_report(
@@ -619,6 +639,76 @@ class ValidateDispositionReportTests(unittest.TestCase):
             source_report(),
         )
         self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_accepts_coordinator_resolution_with_verified_action(self) -> None:
+        result = self.run_validator(
+            resolution_report(
+                coordinator=True,
+                verdict="Confirmed",
+                action="Fix required",
+                implementation="Verified",
+                actionable=True,
+            ),
+            source_report(),
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_accepts_coordinator_assessment_without_coding(self) -> None:
+        result = self.run_validator(resolution_report(coordinator=True), source_report())
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_coordinator_cannot_bypass_chain_or_intent_gates(self) -> None:
+        for verdict, chain in (("Confirmed", "Blocked"), ("Intentional", "Complete")):
+            with self.subTest(verdict=verdict, chain=chain):
+                result = self.run_validator(
+                    resolution_report(
+                        coordinator=True,
+                        verdict=verdict,
+                        chain_status=chain,
+                        action="Fix required",
+                        implementation="Verified",
+                        actionable=True,
+                    ),
+                    source_report(),
+                )
+                self.assertNotEqual(result.returncode, 0)
+
+    def test_rejects_inconsistent_coordinator_ownership_or_mode(self) -> None:
+        report = resolution_report(
+            coordinator=True,
+            verdict="Confirmed",
+            action="Fix required",
+            implementation="Verified",
+            actionable=True,
+        )
+        for inconsistent in (
+            report.replace("| `Coordinator` |", "| `D1` |"),
+            report.replace("Coding mode: `Coordinator`", "Coding mode: `Single coding agent`"),
+            report.replace(
+                "Coordinator implementation - current context covers the localized fix",
+                "D1 launched",
+            ),
+        ):
+            with self.subTest(report=inconsistent):
+                result = self.run_validator(inconsistent, source_report())
+                self.assertNotEqual(result.returncode, 0)
+
+    def test_rejects_placeholder_coordinator_rationales(self) -> None:
+        report = resolution_report(
+            coordinator=True,
+            verdict="Confirmed",
+            action="Fix required",
+            implementation="Verified",
+            actionable=True,
+        )
+        for rationale in (
+            "one cohesive behavior path",
+            "current context covers the localized fix",
+        ):
+            with self.subTest(rationale=rationale):
+                result = self.run_validator(report.replace(rationale, "None"), source_report())
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("concrete rationale", result.stderr)
 
     def test_rejects_verified_action_without_assignment_or_change_evidence(self) -> None:
         report = resolution_report(

@@ -283,11 +283,10 @@ def validate_lineage(
             errors.append("generation 0 Prior resolution consulted must be None")
         if handoff not in {"Ready for receiving-code-review", "Regenerate before implementation"}:
             errors.append("generation 0 must use a non-terminal receiving handoff")
-        expected_receiving = "Yes" if handoff == "Ready for receiving-code-review" else "No"
-        if automatic_receiving != expected_receiving:
-            errors.append(
-                f"generation 0 Automatic receiving permitted must be {expected_receiving} for its handoff"
-            )
+        if automatic_receiving not in {"Yes", "No"}:
+            errors.append("generation 0 Automatic receiving permitted must be Yes or No")
+        elif handoff == "Regenerate before implementation" and automatic_receiving != "No":
+            errors.append("generation 0 regeneration handoff must not permit automatic receiving")
     elif generation == 1:
         if trigger != "post-implementation":
             errors.append("generation 1 Review trigger must be post-implementation")
@@ -391,8 +390,11 @@ def main() -> int:
     assessment = field(text, "Assessment subagent")
     if not assessment:
         errors.append("Assessment subagent status is required")
+    elif assessment.startswith("Coordinator assessment - "):
+        if is_placeholder(assessment.removeprefix("Coordinator assessment - ")):
+            errors.append("Coordinator assessment requires a concrete rationale")
     elif not (assessment.startswith("R0 launched") or assessment.startswith("Subagent unavailable")):
-        errors.append("Assessment subagent must record R0 launched or the unavailable fallback")
+        errors.append("Assessment subagent must record coordinator assessment, R0 launched, or the unavailable fallback")
 
     recommendation = field(text, "Recommendation")
     if recommendation not in RECOMMENDATIONS:

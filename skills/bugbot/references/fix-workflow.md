@@ -7,10 +7,10 @@ Use this workflow only for the `fix` phase selected by `SKILL.md`.
 Before editing:
 
 1. Resolve the immutable source report from `Source Report` or the unambiguous report path in the preceding Bugbot handoff. Confirm that it exists, declares `Report type: bugbot`, and contains the selected findings.
-2. Determine repair intent semantically from the full conversation. Do not use a phrase list, keyword whitelist, exact command shape, language assumption, or literal `$bugbot` mention as the gate. Confirmation exists when the user intends code changes that address findings in an identifiable Bugbot report; acknowledgement, questions, or discussion without change intent do not authorize repair.
+2. Determine repair intent semantically from the full conversation, including an initial request to review and fix. Do not use a phrase list, keyword whitelist, exact command shape, language assumption, or literal `$bugbot` mention as the gate. Confirmation exists when the user intends code changes addressing either this review's verified findings or an identifiable existing Bugbot report; acknowledgement, questions, or discussion without change intent do not authorize repair.
 3. Infer scope from the same context. When repair intent is clear and no subset is indicated, select all unresolved findings in the most recent unambiguous report. Resolve a subset by `B#`, title, file, location, or another semantic reference that identifies it confidently. Treat report ID, finding ID, file, and location together as the durable finding identity; do not infer a subset from severity alone.
 4. Ask for clarification only when repair intent, source report, or selected scope is genuinely ambiguous after using the available conversation. Do not require the user to repeat the skill name, report path, or finding details already present.
-5. If the relevant checkout changed enough that a selected finding can no longer be mapped confidently, do not reuse the old confirmation. Run a fresh detection, persist a new report, and require repair intent to be established against that new report.
+5. Reconcile checkout drift against the selected failure mode before editing. Preserve authorization when current evidence still identifies the same issue within the original scope; mark stale, already-fixed, or unmappable findings explicitly. If resolving drift requires a broader review or repair of a distinct finding, report the gap and request that additional scope.
 
 Confirmation applies only to the selected findings. A newly discovered bug, an unrelated cleanup, or a materially broader behavior change requires separate user confirmation.
 
@@ -27,6 +27,8 @@ Treat the source report as fixed input. Never rewrite it to mark findings resolv
 7. Inspect the resulting diff and confirm that each selected root cause is removed, no unrelated file changed, and the Git index, branches, and remotes were untouched.
 
 Repair automatically after valid confirmation; do not ask for another approval for ordinary in-scope local edits or verification. Ask again before dependency changes, destructive actions, external mutations, or scope expansion.
+
+Reuse verification that already covers the selected repair. Add tests for an observable failure or contract gap, and finish after relevant checks and required repository gates pass. Repeat or broaden verification only when another edit, failure, or unresolved concern warrants it.
 
 If verification fails, diagnose and adjust only while new evidence supports another correction within the confirmed scope. Do not repeat a failed approach blindly. Stop and report the remaining failure when the next attempt would broaden behavior, require new authority, or lack an evidence-backed in-scope correction.
 

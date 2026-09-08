@@ -6,6 +6,10 @@ description: Identify, prevent, and remediate 重复造轮子 across code, libra
 
 Reduce duplicated effort by making existing assets discoverable, assessing whether reuse is justified, and turning repeated work into maintained shared capabilities without forcing premature abstraction.
 
+## Requested Outcome
+
+Run the steps needed for the user's deliverable. An audit or plan returns evidence and recommendations without automatically consolidating code, creating a catalog, or starting governance work. When implementation is requested, verify candidates and continue within that existing authorization; similarity scores or an audit report do not grant additional scope.
+
 ## Core workflow
 
 1. **Frame the scope.** Identify the capability being duplicated, the affected repos/teams/domains, target outcome, constraints, and whether the user wants a quick audit, a refactor plan, a governance model, or an implementation patch.
@@ -13,9 +17,9 @@ Reduce duplicated effort by making existing assets discoverable, assessing wheth
 3. **Classify the duplicate.** Label each finding as exact copy, near clone, same business rule, same platform workflow, overlapping service/API, duplicated template/docs, abandoned fork, or justified divergence. Treat similarity as a clue, not proof.
 4. **Decide reuse strategy.** Prefer reuse when the existing asset is fit, owned, maintained, secure, compatible, and cheaper to adopt than to rebuild. Prefer local divergence when domains are likely to evolve separately or abstraction cost exceeds duplication cost.
 5. **Choose an intervention.** Recommend one of: adopt as-is, adapt through extension points, wrap behind a stable façade, extract a shared module, merge services, publish a template/golden path, deprecate a duplicate, archive dead assets, or document a justified exception.
-6. **Make reuse obvious.** Add or update catalog metadata, owner, lifecycle, examples, getting-started path, decision record, migration guide, tests, and feedback channel. A reusable asset without owner and examples is usually just hidden maintenance debt.
+6. **Make reuse obvious when delivering a shared asset or catalog.** Add or update the metadata, ownership, lifecycle, examples, migration guidance, and verification needed for that deliverable. A reusable asset without owner and examples is usually just hidden maintenance debt.
 7. **Plan safe migration.** Move in small behavior-preserving steps with tests, rollback points, compatibility notes, and a deprecation schedule. Keep user-facing behavior stable unless explicitly changing product semantics.
-8. **Measure the loop.** Track catalog coverage, duplicate candidates resolved, reuse adoption, consumers migrated, build-vs-reuse ADRs, support load, lead time, and stale/ownerless assets.
+8. **Measure the requested outcome.** Use before/after evidence for a local consolidation; track adoption, catalog coverage, migrated consumers, support load, or stale assets when an ongoing reuse program is in scope.
 
 ## Use bundled resources
 

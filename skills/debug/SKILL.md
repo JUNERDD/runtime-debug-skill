@@ -80,6 +80,14 @@ Use one **coverage-first** workflow. Scale probe breadth with reproduction cost,
 - Before planning another run, record the completed run's ID, purpose, owner, delegation, evidence, and status in the investigation ledger. Default post-repair verification to user ownership unless a still-applicable `remaining-runs` delegation or a new explicit verification delegation selects another owner. Use `external` only when the current user explicitly designates an external operator.
 - A new `runId` never implies a new collector session. Reuse the ledger's active ready file across failing, blind-spot, and verification runs while that collector remains reachable.
 
+## Interpreting reproduction replies
+
+Determine the next action from the meaning of the user's reply in the ongoing investigation: what the handoff asked them to do, what they now report, and what they want to happen next. Use that combined understanding to judge whether the reason for waiting still applies. Do not substitute keyword matching, similarity to example replies, or a fixed catalog of reply types for this judgment.
+
+When the handoff is complete, continue the same run's sealing, recording lock, and evidence analysis without requiring prescribed wording or another confirmation. Clarify only when the unresolved meaning would materially change the next action.
+
+User intent resolves the conversational handoff; runtime evidence establishes capture completeness and reproduction outcome. Verify the checkpoint, producer shutdown, adapter flush, and persisted records independently, preserving incomplete evidence as such. Keep the existing scope and reproduction ownership.
+
 ## Mandatory user-reproduction output gate
 
 If the current response asks the user to perform a reproduction, the response is invalid unless it renders as the exact Markdown structure below. Begin with `Dashboard:`; put no heading, greeting, readiness claim, or other prose before it. Never replace the actual URL with wording such as “opened successfully.” Emit the template as ordinary Markdown, not as a code block.
@@ -107,7 +115,7 @@ Dashboard: <status> — <dashboardUrl-or-unavailable> (frontend confirmed: <true
 
 1. <exact step>
 2. <additional exact step when needed>
-3. <reach the exact observable checkpoint; then use an existing host completion action or reply `done`>
+3. <reach the exact observable checkpoint; then use an existing host completion action or briefly describe whether reproduction is complete and what happened>
 ```
 
 Keep three concepts separate: the checkpoint is an observable product or flow boundary; a host completion action is a control already exposed by the current Codex host, not product instrumentation; and only an unambiguous accepted write plus persisted-record reconciliation proves complete capture. Before handoff, attach terminal or checkpoint instrumentation to the natural boundary so it records automatically. Never create or expose an instrumentation-only `window` or `globalThis` helper, ask the user to open DevTools, or ask them to evaluate JavaScript merely to start or end the run, emit a sentinel, checkpoint or flush the adapter, or signal completion. Allow a console step only when the failure contract itself requires console interaction or the current user explicitly chooses that path after receiving a no-console alternative, and still verify persistence independently.

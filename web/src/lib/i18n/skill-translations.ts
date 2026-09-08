@@ -45,7 +45,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "用 DX 感知的架构门禁最大化安全删码。",
       lead: "一个删除优先的工作流，用于减少需维护代码，同时保持外部可观察行为不变。",
       overview:
-        "当代码库需要激进但有纪律的简化时使用此 skill。它会建立行为保持 oracle，审计可删除代码，测试删除和简化候选项，并在架构级重构前暂停等待明确批准，让瘦身提升可维护性，而不是制造稠密或高风险代码。该 skill 仅支持显式调用：用户必须使用 `$exhaustive-code-slimmer` 调用；仅凭提示词匹配不会自动激活。",
+        "当代码库需要激进但有纪律的简化时使用此 skill。它会建立行为保持 oracle，审计可删除代码，并穷尽测试删除和简化候选项。仅审计的请求止于建议；实施沿用已批准范围，只为尚未决定的架构问题准备具体选项。该 skill 仅支持显式调用：用户必须使用 `$exhaustive-code-slimmer` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "寻找可删除文件、分支、导出、依赖、包装层和重复逻辑。",
         "用 build、typecheck、test、lint、smoke 或 contract oracle 验证删减候选项。",
@@ -61,12 +61,12 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       outputs: [
         "前后指标、已接受候选项、被拒绝的高风险候选项和瘦身比例。",
         "最终代码缩减结果的 oracle 命令和剩余盲点。",
-        "当安全瘦身需要结构清理时，给出需批准的架构选项。",
+        "当安全瘦身涉及尚未决定的设计或范围时，给出具体架构选项。",
       ],
       guardrails: [
         "不要把压缩、混淆、纯空白删除或注释删除算作代码瘦身。",
         "没有证据时不要删除公共 API、迁移、兼容 shim、安全检查、运维日志或配置。",
-        "在用户明确批准某个选项或范围前，不要执行架构级重构。",
+        "架构变更须处于已批准范围内；已有授权贯穿候选评估和验证，不重复审批。",
       ],
       entryPoints: [
         { description: "穷尽式瘦身工作流、oracle 规则和批准门禁。", label: "工作流" },
@@ -82,7 +82,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       lead:
         "一个复用优先工作流，用于发现已有资产、判断是否采纳或整合，并记录有证据的差异化选择。",
       overview:
-        "当团队在代码、库、服务、模板、文档、平台流程或架构决策上重复造轮子时使用此 skill。它结合先搜索再构建、重复类型分类、build-vs-reuse 评分、迁移规划和轻量 catalog 脚本，让复用决策基于证据，而不是抽象口号。",
+        "当团队在代码、库、服务、模板、文档、平台流程或架构决策上重复造轮子时使用此 skill。它结合已有资产检索、重复类型分类、build-vs-reuse 评分、迁移规划和 catalog 脚本。审计与规划只交付证据和建议；整合、资产目录和持续治理按用户要求的交付范围开展。",
       bestFor: [
         "审计重复实现、重叠服务、重复模板或废弃 fork。",
         "判断应该采纳、适配、包装、抽取、整合、下线，还是记录合理分歧。",
@@ -93,7 +93,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "在提出新工作前搜索本地代码、文档、manifest、设计系统、服务 catalog、ADR、ticket 和团队约定。",
         "按完全复制、近似克隆、共享业务规则、重叠服务、模板重复、废弃 fork 或合理分歧分类候选项。",
         "从适配度、所有权、维护、安全、兼容性、迁移成本和未来演进角度评分复用价值。",
-        "推荐干预方式，并通过示例、owner、生命周期、反馈渠道和指标让复用路径清晰可见。",
+        "推荐干预方式；仅在交付范围包含这些工作时，补充共享资产、目录指引和持续指标。",
       ],
       outputs: [
         "包含路径、符号、包或服务名、文档、搜索词、owner、consumer 和置信度的证据。",
@@ -313,7 +313,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "把混杂 working tree 拆成聚焦的本地 commits。",
       lead: "一个有纪律的 staging 工作流，把宽泛本地修改拆成短而可审查的 commit 序列。",
       overview:
-        "当无关事项、重构、行为变化、生成文件或可分离 hunk 混在一起时使用此 skill。它规划逻辑批次，一次 stage 一个批次，调用 `git-commit` 生成消息，并在每次 `git commit` 前要求明确确认。",
+        "当无关事项、重构、行为变化、生成文件或可分离 hunk 混在一起时使用此 skill。它规划逻辑批次，一次 stage 一个批次，并调用 `git-commit` 生成消息。用户授权可以覆盖单个批次或整轮提交；仅在尚未授权时，对准备好的批次请求确认，并遵守用户要求的逐批确认。",
       bestFor: [
         "分离同一个 working tree 中的无关事项。",
         "把重构和行为变化分开。",
@@ -324,12 +324,12 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "判断修改是否需要拆分，并写出简短 commit 计划。",
         "改变 staged 文件前尊重现有 index 内容。",
         "一次只 stage 一个逻辑批次，并只包含属于该批次的文件和 hunk。",
-        "为 staged 批次调用 `git-commit`，并在运行每个 commit 前请求确认。",
+        "调用 `git-commit` 并展示 staged 摘要和消息；已有授权覆盖该批次时继续提交，否则请求确认。",
       ],
       outputs: [
         "一组聚焦 commits 的建议顺序。",
         "一次一个 staged 批次，并配套 Conventional Commit 草稿。",
-        "只有在明确批准后才创建本地 commits。",
+        "在用户明确授权的批次或提交序列内创建本地 commits。",
       ],
       guardrails: [
         "不要把 push 包含在拆分工作流里。",
@@ -388,35 +388,40 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
     },
     "plan-mode": {
       category: "规划",
-      blurb: "在编辑前规划复杂或高风险工作。",
+      blurb: "创建带代码引用和待办事项的可编辑实施计划。",
       lead:
-        "一个无修改规划工作流，用于收集证据、消除歧义，并产出需要批准的实施计划。",
+        "一个规划工作流，用可编辑 Markdown 计划记录代码引用、待办事项及规划或实施范围。",
       overview:
-        "当任务复杂、模糊、高风险或范围较广，过早编辑会造成返工或偏离用户意图时使用此 skill。它让 agent 留在只读探索中，提出聚焦的澄清问题，明确可能涉及的文件和验证路径，并在执行前等待明确批准。",
+        "当用户要求规划、保存计划文件，或以架构和方案权衡分析为交付物时使用此 skill。它创建可编辑 Markdown 计划，研究具体代码引用，解决关键问题，并维护可执行待办。只要求规划时停在实施之前；已经要求规划并实施时沿用已有授权继续。任务复杂或涉及多文件本身不会触发新的批准流程。用户要求访谈，或存在适合追问的关键未决选择时，再使用 `grill-me`。",
       bestFor: [
         "在编辑前规划多文件实现、架构、路由、数据流或权衡较多的工作。",
+        "维护包含文件引用、代码引用和复选框待办的 Markdown 计划。",
+        "使用 `grill-me` 开展用户要求的访谈或澄清关键未决选择。",
         "为 dirty worktree、迁移、设置、部署、生成代码或其他高影响面保持严格边界。",
-        "创建包含受影响区域、顺序步骤、验证、非目标和关键风险的具体计划。",
+        "在已有授权范围内实施全部或选定待办，或交付仅规划的结果。",
       ],
       workflow: [
-        "重述目标，并定义无修改规划边界。",
-        "只用只读的文件、代码、文档、诊断或 subagent 探索来研究必要信息。",
-        "当缺失决策会实质改变实现时，尽早提问。",
-        "给出简洁计划，包含范围、文件或模块、实施顺序、验证、非目标和风险。",
-        "在编辑、stage、启动写入型工具或改变系统前等待批准。",
+        "判断请求仅限规划还是已授权实施，然后创建或复用 Markdown 计划并提供路径。",
+        "研究必要信息，把具体文件、代码引用、约束和未决问题写入计划。",
+        "仅在未决选择会实质改变计划时提问，并在收到回答后更新文件。",
+        "维护可编辑的复选框待办，以便之后选择和实施。",
+        "结合证据检验假设；用户要求访谈或存在关键未决选择时再使用 `grill-me`。",
+        "校验并概述计划，按请求交付规划结果，或直接实施已授权待办并完成相关检查及仓库必需门禁。",
       ],
       outputs: [
-        "针对当前任务的具体批准门控计划。",
+        "包含代码引用、可编辑待办及准确授权状态的 Markdown 计划。",
+        "需要访谈时生成的 `grill-me` 记录和规划结果文件路径。",
         "当歧义会改变计划时，提出聚焦澄清问题。",
-        "批准后清晰交接到执行，并包含承诺的验证步骤。",
+        "计划到实施的交接，或完成已授权实施并进行相称验证。",
       ],
       guardrails: [
-        "规划时不要编辑文件、创建文件、stage commits、安装包、启动服务或运行写入型脚本。",
+        "仅规划阶段只允许写计划及 `grill-me` 记录或结果，不编辑实现、安装包、启动服务或修改 Git 状态。",
         "不要把未解决的产品、数据、安全或架构假设藏在最终计划里。",
-        "不要把用户批准研究误当成批准实现无关清理。",
+        "实施前重读计划并确认授权覆盖全部还是选定待办；已有授权覆盖的工作无需再次请求批准。",
       ],
       entryPoints: [
         { description: "规划边界、工作流、澄清规则和交接要求。", label: "工作流" },
+        { description: "创建并校验 Markdown 计划文件。", label: "计划文件助手" },
         { description: "生命周期、模式边界、研究策略、图示和常见失败模式。", label: "架构参考" },
         { description: "此 skill 的可选 agent 运行时元数据。", label: "运行时元数据" },
       ],
@@ -445,7 +450,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "原生调试器已连接且暂停安全时，在第一次 run/continue 前安装全部安全、非冗余的 initial 断点；若工具一次只能设置一个位置，则连续设置完再恢复执行。暂停后若暴露新的因果区间，也先一次性补齐该区间的断点再继续；暂停不安全时改用非暂停探针。",
         "从调查账本记录的精确 ready file 恢复日志会话；健康会话跨轮次与 run ID 复用同一 collector、dashboard、IDE 选择和 location 状态，不扫描工作区也不重复打开 UI。新建的本地图形环境会话仍自动尝试打开并确认 dashboard，明确无界面、CI、容器内或远程会话才显式关闭。",
         "对共享 causal cuts 与 invariants 插桩，选择项目 logger 或目标运行时原生 adapter；使用目标项目的模块系统逐一解析每条临时 helper 引用（slash 分隔的文件相对引用可选用路径助手），再通过原生解析、编译、collector、expected-probe 与事件基数门禁；上一轮冻结分析和下一轮准备完成后运行 `resume-recording`，要求 collector 为 live，并在每次请求用户复现前复制规范化的 `dashboard-status` 状态与 URL 行。",
-        "收集一次干净 terminal 运行或有界观察窗口，解绑其 producer、flush 选定的 logger 或 runtime adapter、核对被接受的写入与持久化 NDJSON、冻结 collector，并在 recording 保持 frozen 时按 run 与相关应用 correlation 字段摘要证据。",
+        "收集一次干净 terminal 运行或有界观察窗口，结合上下文理解用户回复的意图，识别复现交接是否完成，无需回复固定词语；随后解绑 producer、flush 选定的 logger 或 runtime adapter、核对被接受的写入与持久化 NDJSON、冻结 collector，并在 recording 保持 frozen 时按 run 与相关应用 correlation 字段摘要证据。",
         "证明从起点到症状的传播链；若仍不足，只为最小未决因果区间补探针，并全程更新同一份调查账本。",
         "仅诊断时先保存证据并清理临时 instrumentation；否则把诊断视为中间结果，立即修复已证明的机制、独立验证并清理 owned artifacts。",
       ],
@@ -464,7 +469,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "不要把原生调试器控制台 logpoint 当作完整证据；承担证据作用的 logpoint 必须同时是经过校验、并通过选定 runtime adapter 写入的结构化探针。",
         "临时 correlation header 可能改变 CORS、缓存、路由、签名、授权或产品行为时，不要添加它。",
         "不要把 dashboard 可见性当作证据，也不要让打开失败阻塞证据采集或复现。",
-        "不要发明 DevTools 或页面全局 helper 作为用户完成动作；应把 checkpoint instrumentation 绑定到自然边界，使用宿主已有动作或回复 `done`，并根据 acknowledgement 与持久化记录证明完整性。",
+        "不要发明 DevTools 或页面全局 helper 作为用户完成动作；应把 checkpoint instrumentation 绑定到自然边界，使用宿主已有动作或自然语言回复。应理解整条回复的意图，避免匹配关键词；用户报告完成后，仍须独立核验 checkpoint、acknowledgement 与持久化记录。",
         "不要把 collector 全局 `FROZEN` 当作健康故障、证据完成或持久化 checkpoint，也不要在 producer 尚未解绑或 adapter 尚未 flush 时 Freeze；在分析与修复期间保持冻结，仅在下一轮准备完成且即将记录时 Resume。",
         "仅诊断任务不要实施修复，也不要保留仍让因果机制继续生效的较小 workaround。",
         "不要对任何活动探针 occurrence 做采样、节流、debounce、first-N、change-gate、once-per-key、聚合、合并、覆盖、去重或丢弃。",
@@ -529,7 +534,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       lead:
         "一个两阶段本地 diff 审查器，提供持久 Markdown 报告与低摩擦、报告范围内的修复。",
       overview:
-        "对本地 branch 或未提交改动执行窄范围 Bugbot 工作流时使用此 skill。检测会盘点 tracked 与 untracked 文件，递归追踪 diff 派生候选项直到有界固定点，并把每个已验证的生产 Bug 写入唯一 Markdown 报告；该报告是检测阶段唯一允许的写入。报告展示后，Bugbot 会结合完整对话识别修复意图，而不是匹配固定确认文字。修复意图明确且没有更窄范围时，选择最新无歧义报告中的全部未解决 findings；对具体 finding 的语义指代可以缩小范围。Bugbot 会验证有范围的修复，不会静默处理新 findings，也不会改变 Git 发布状态。",
+        "对本地 branch 或未提交改动执行窄范围 Bugbot 工作流时使用此 skill。检测会盘点 tracked 与 untracked 文件，递归追踪 diff 派生候选项直到有界固定点，并把每个已验证的生产 Bug 写入唯一 Markdown 报告；该报告是检测阶段唯一允许的写入。修复意图来自完整对话，也包括首次请求中的评审并修复授权。报告落盘后继续已授权修复，无需再次批准；只要求评审时停在报告。修复意图明确且没有更窄范围时，选择最新无歧义报告中的全部未解决 findings；具体语义指代可以选择子集。运行相关及必需检查，不静默处理不同的新 findings，也不改变 Git 发布状态。",
       bestFor: [
         "针对仓库默认分支或指定 base 审查当前 branch work。",
         "针对 HEAD 审查 staged、unstaged 与 untracked 本地改动。",
@@ -541,7 +546,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "只沿与改动有因果关系的控制流、依赖、契约、状态和失败路径追踪候选项。",
         "持续加入新暴露的 diff 相关风险直到固定点，再按根因验证和去重。",
         "把每个已验证 finding 写入带稳定报告内 ID、证据、coverage 与 recommendation 的唯一 Markdown 报告。",
-        "当对话上下文确立报告修复意图时，重新验证推断出的 finding 范围，应用有范围修复并运行相称检查。",
+        "报告落盘后沿用首次请求或后续对话中的修复授权，重新验证选定 findings，完成针对性及必需检查，避免无依据重复验证。",
       ],
       outputs: [
         "一份持久 Markdown 报告，包含每个引入生产 Bug 的 finding card 与完整索引。",
@@ -551,7 +556,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       guardrails: [
         "检测期间只写报告 artifact；不要编辑被审查源码或 Git 状态。",
         "只为 Bugbot 请求启动新检测；隐式路由用于报告跟进，而不是普通 code review。",
-        "通过语义识别报告修复意图，不匹配固定短语；只有意图、报告来源或范围真正不清楚时才询问。",
+        "从当前及之前的用户指令识别修复意图，保留只评审的范围；只有意图、报告或 finding 范围仍存在关键歧义时才询问。",
         "不要限制 findings 数量，也不要在最高严重度或最容易的问题后停止。",
         "不要把递归前沿扩展到与被审查改动没有因果关系的路径。",
         "不要 stage、commit、push、deploy，或在没有单独请求时修复不同的新 findings。",
@@ -569,7 +574,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       lead:
         "一个冻结范围的深度审查工作流：要求权威 expected-behavior 依据、稳定问题指纹，并把实现后复审限制为终止 generation。",
       overview:
-        "当用户请求 `/code-review`、PR/diff/branch/staged review 或 merge 前安全检查时使用此 skill。它先做只读编排评估并冻结初审范围，追踪可传播风险，在把产品选择判为 defect 前要求权威产品或契约证据，并为问题生成确定性的语义指纹。receiving 最多可生成一次仅覆盖实现 delta 与受影响执行链的 generation-1 复审；该报告是终点，不能自动再启动 receiving。该 skill 仅支持显式调用：用户必须使用 `$code-review` 调用；仅凭提示词匹配不会自动激活。",
+        "当用户请求 `/code-review`、PR/diff/branch/staged review 或 merge 前安全检查时使用此 skill。它先由协调者评估编排，仅在独立分析或并行覆盖有实质收益时委派，并冻结初审范围，追踪可传播风险，在把产品选择判为 defect 前要求权威产品或契约证据，并为问题生成确定性的语义指纹。receiving 最多可生成一次仅覆盖实现 delta 与受影响执行链的 generation-1 复审；该报告是终点，不能自动再启动 receiving。该 skill 仅支持显式调用：用户必须使用 `$code-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "审查 PR、branch diff、staged changes、working tree、聚焦文件或 pasted code。",
         "判断并行 specialist subagents 何时能实质提升审查价值。",
@@ -579,7 +584,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       ],
       workflow: [
         "先确定 review chain generation、冻结范围，并记录 baseline、target、需求与最小 diff inventory。",
-        "启动只读 orchestration-assessment subagent，并执行其单 reviewer 或 specialist 计划。",
+        "由协调者或有明确价值的只读 assessor 评估范围与风险，再执行单 reviewer 或 specialist 计划。",
         "当风险可能传播时，沿控制流、数据、安全、持久化、集成和测试路径追踪到 diff 之外。",
         "先建立 expected behavior 依据，再独立验证、去重并为 candidate 分配稳定 ID、issue key 和 fingerprint。",
         "按模板写出标准 `code-review` Markdown 报告，并用 `scripts/validate_review_report.py` 校验。",
@@ -590,7 +595,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "完整 findings index、test gaps、coverage ledger、问题血缘和有界 receiving handoff。",
       ],
       guardrails: [
-        "除非用户明确要求 fixes，否则不要在 review 期间改代码。",
+        "review 阶段保持只读；用户也已授权 fixes 时，先完成报告再继续修复。",
         "不要 stage、commit、push 或改变 Git 状态。",
         "不要把审查深度等同于 agent 数量；仅在范围与风险证明有必要时启动 specialists。",
         "未经协调者独立综合，不要把 subagent 结论直接写入报告。",
@@ -613,19 +618,19 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       lead:
         "一个执行链优先的响应工作流：继承既有产品裁决、强制 disposition 状态相容，并限制实现后复审次数。",
       overview:
-        "在收到 `code-review` 报告或等价 PR feedback 后使用此 skill。分配 disposition 前，它先从真实触发与入口出发，经过 guards、控制/数据/状态传播、持久化与外部效应、失败语义，一直追踪到终端影响。它跨 generation 继承匹配的 Intentional、Disproved、Stale 和 Duplicate 裁决；链路或产品权威证据不完整时禁止修复；只委派状态相容的已确认动作；把相邻的新发现作为 provisional residual 返回；初审链最多运行一次终止 post-review，且不自动消费其 findings。该 skill 仅支持显式调用：用户必须使用 `$receiving-code-review` 调用；仅凭提示词匹配不会自动激活。",
+        "在收到 `code-review` 报告或等价 PR feedback 后使用此 skill。分配 disposition 前，它先从真实触发与入口出发，经过 guards、控制/数据/状态传播、持久化与外部效应、失败语义，一直追踪到终端影响。它跨 generation 继承匹配的 Intentional、Disproved、Stale 和 Duplicate 裁决；链路或产品权威证据不完整时禁止修复；由协调者或有明确价值的委派执行状态相容的已确认动作；仅在确认仍适用后复用已有证据；把相邻的新发现作为 provisional residual 返回；初审链最多运行一次终止 post-review，且不自动消费其 findings。该 skill 仅支持显式调用：用户必须使用 `$receiving-code-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "在改代码前，针对完整端到端执行链重新验证每个 `F#`、`T#` 和未覆盖的 `A#`。",
         "用证据正式挑战错误、夸大或过时的 review 主张。",
-        "通过 coding subagent 修复已确认的正确性、安全、契约或测试问题。",
+        "按工作范围选择实现负责人，修复已确认的正确性、安全、契约或测试问题。",
         "除非代码、契约或实质证据变化，否则保护权威产品意图不被重新打开。",
         "在未请求发布时保留 staged 工作，并让新修复保持 unstaged。",
       ],
       workflow: [
         "阅读完整 source review，或把非结构化反馈规范化为稳定 item IDs。",
-        "捕获血缘与 Git 状态，先重建并冻结可复用的 EC# 端到端执行链，再启动 re-review 编排。",
+        "捕获血缘与 Git 状态，建立当前 EC# 端到端执行链，并评估委派是否有实质价值。",
         "针对完整执行链和 expected-behavior 权威性验证每项，并分配相容的 verdict、action 与 implementation state。",
-        "把已确认的修复或测试工作委派给 coding subagent，并给出明确所有权与 no-staging 约束。",
+        "由协调者或有明确价值的 coding 委派实现已确认修复，并给出明确所有权与 no-staging 约束。",
         "generation-0 source 最多使用一次实现 delta post-review，将其作为终点链接，并在不自动 receiving 的情况下返回剩余 findings。",
       ],
       outputs: [
@@ -637,18 +642,93 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       guardrails: [
         "不要盲目应用 review feedback。",
         "在 intake、条目枚举及 complete/blocked EC# 重建完成前不要改代码。",
-        "当 coding subagent 可用时，不要只在协调者里实现已确认的代码或测试改动。",
+        "按风险与执行收益选择委派；协调者直接实现同样需要条目所有权和当前验证证据。",
         "除非当前请求明确要求，否则不要 stage、commit 或改变 Git index。",
         "在每个 source item 都有 disposition、每个已实现 item 都有针对性验证前，不要声称已解决。",
         "不要静默丢弃或自动实现 verifier 发现的独立问题；应把它们作为 provisional residual candidates 返回。",
         "不要自动修复 blocked chain 或未确认产品选择，也不要从终止 post-review 自动开启下一轮 receiving。",
       ],
       entryPoints: [
-        { description: "重新审查、挑战、coding 委派和 Git index 保留规则。", label: "工作流" },
+        { description: "重新审查、挑战、实现所有权和 Git index 保留规则。", label: "工作流" },
         { description: "评估协议与 specialist 重新审查指导。", label: "重新审查编排" },
         { description: "标准 receiving-code-review resolution report 形状。", label: "Disposition 模板" },
         { description: "校验执行链、血缘继承、状态相容和单次 review 预算。", label: "Disposition 校验器" },
         { description: "覆盖执行链优先 disposition 与有界后续的回归测试。", label: "校验器测试" },
+        { description: "此 skill 的可选 agent 运行时元数据。", label: "运行时元数据" },
+      ],
+    },
+    "thermo-review": {
+      category: "代码审查",
+      blurb: "输出严格的结构质量评审报告。",
+      lead: "聚焦职责拆分、文件膨胀、抽象边界和复杂度增长的结构质量门禁。",
+      overview:
+        "用此 skill 进行严格的可维护性评审。它输出 Markdown 报告，以 350 行作为分析内聚性、依赖和职责归属的触发信号，并持续检查结构候选项，直到覆盖完整或明确记录缺口。仅评审时止于报告；已授权的修复在保留报告后继续。该 skill 仅支持显式调用：用户必须使用 `$thermo-review` 调用；仅凭提示词匹配不会自动激活。",
+      bestFor: [
+        "评估改动是否让实现更加纠缠、膨胀、间接或难以扩展。",
+        "发现遗漏的简化机会、内聚职责拆分、职责归属调整和类型边界改进。",
+        "产出包含问题、递归覆盖、行数证据和剩余盲点的持久报告。",
+      ],
+      workflow: [
+        "设定评审范围和基线；未指定时优先暂存改动，再考虑工作区。",
+        "整理差异和行数；对超过 350 行的候选文件分析职责、依赖边界和规范所有者。",
+        "从文件增长、分支、辅助函数、抽象、类型、所有权、编排、测试和重复代码中建立候选集合。",
+        "结合局部流程、调用点、契约、测试和已有规范实现，向内外追踪每个候选项。",
+        "继续纳入新发现的简化候选项，直到没有新增项或明确记录未覆盖部分。",
+        "保留包含问题、拆分缺口、覆盖和证据的报告，再按用户要求结束评审或继续修复。",
+      ],
+      outputs: [
+        "一份 Markdown 结构质量评审报告。",
+        "包含建议、完成状态、严重度统计和主要结构风险的简洁总结。",
+        "递归覆盖记录、行数记录、候选检查日志和质量门禁建议。",
+      ],
+      guardrails: [
+        "评审阶段保持只读；报告完成后的修复遵循已有用户授权。",
+        "不要把测试通过当作结构合理的证明。",
+        "不要静默豁免超过 350 行的结构候选项；说明职责边界或记录覆盖缺口。",
+        "不要用密集排版、任意搬移或其他只降低行数的手段解决阈值问题。",
+        "主要问题是正确性、安全、隐私、数据丢失或合并风险时，使用 `code-review`。",
+      ],
+      entryPoints: [
+        { description: "结构评审、覆盖和交接规则。", label: "工作流" },
+        { description: "结构问题、递归覆盖和行数证据模板。", label: "报告模板" },
+        { description: "此 skill 的可选 agent 运行时元数据。", label: "运行时元数据" },
+      ],
+    },
+    "receiving-thermo-review": {
+      category: "代码审查后续",
+      blurb: "验证并处理严格的结构评审反馈。",
+      lead: "用当前证据处理结构反馈，避免盲目重构和行为回归的响应流程。",
+      overview:
+        "用此 skill 处理 thermo 报告或结构反馈。它逐项处理问题、拆分、覆盖和行数证据，检查行为一致性，并验证职责内聚性后再处理阈值问题。过期项单独核对，独立且已授权的修复可以继续；原始报告和无关 Git 状态会保留。有必要时只对受影响改动复审。该 skill 仅支持显式调用：用户必须使用 `$receiving-thermo-review` 调用；仅凭提示词匹配不会自动激活。",
+      bestFor: [
+        "结合当前差异、行数、调用点和职责归属验证结构问题。",
+        "通过职责和依赖分析处理 350 行问题，以及拆分、递归覆盖和候选检查事项。",
+        "在指定范围内实施简化，同时验证输入、保护条件、输出和扩展点的行为一致性。",
+      ],
+      workflow: [
+        "阅读可用报告、用户期望、已批准范围、基线和当前代码。",
+        "根据问题、拆分缺口、递归覆盖、行数、候选检查和盲点建立处理记录。",
+        "逐项核对过期或不一致的证据，只阻塞依赖它的编辑，并保留未解决的覆盖缺口。",
+        "为阈值问题分析职责和依赖，在已批准边界内选择内聚的解决方案。",
+        "给出简洁的行为一致性与验证计划，然后继续已授权工作。",
+        "优先处理确认的阻塞项，同时解决独立事项，记录有证据的豁免和后续处理决定。",
+        "重算受影响行数，执行针对性验证和必需检查，报告剩余问题，不递归启动评审循环。",
+      ],
+      outputs: [
+        "覆盖所接收 thermo 报告事项的完整处理记录。",
+        "范围明确的结构修复，或有证据的质疑、豁免和后续处理决定。",
+        "受影响部分最新的行数、覆盖和行为一致性状态。",
+      ],
+      guardrails: [
+        "不要盲目执行结构评审反馈。",
+        "没有批准范围时，不启动广泛的架构重构。",
+        "不要把行数降低、密集排版或搬入杂项模块当作阈值问题已解决。",
+        "不要用结构清理掩盖潜在的用户可见回归。",
+        "保留已有暂存内容；Git 操作遵循用户针对本任务的具体授权。",
+        "所有问题、拆分缺口、阈值事项和开放覆盖项都有处理结果后，才能声明门禁已解决。",
+      ],
+      entryPoints: [
+        { description: "结构反馈处理、行为一致性和验证规则。", label: "工作流" },
         { description: "此 skill 的可选 agent 运行时元数据。", label: "运行时元数据" },
       ],
     },
@@ -657,14 +737,14 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "审查实现是否依赖脆弱的 hack-like 捷径。",
       lead: "一个 coverage-led 审计，用于发现结构性捷径、所有权泄漏、被掩盖的根因和脆弱边界处理。",
       overview:
-        "当一个变更需要实现质量门禁，而不是普通代码审查时使用此 skill。它审查声明范围，枚举发现的每个不同 hack-risk，记录有意例外，并显示哪些所有权边界已覆盖或仍未知。该 skill 仅支持显式调用：用户必须使用 `$hack-review` 调用；仅凭提示词匹配不会自动激活。",
+        "当变更需要实现质量门禁时使用此 skill。它审查声明范围，枚举不同 hack 风险，保护合理例外，并记录所有权覆盖。未指定范围时优先检查暂存改动，否则比较工作区与 HEAD。仅评审时止于报告；已授权的修复在保留报告后继续。该 skill 仅支持显式调用：用户必须使用 `$hack-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "发现会隐藏破坏性不变量的 impossible-state fallback。",
         "标记没有解决根因的 symptom-masking patch。",
         "捕捉重复抽象、硬编码特例和边界绕过。",
       ],
       workflow: [
-        "先设定审查范围，并拒绝静默扩大范围。",
+        "先设定审查范围；未指定时优先检查暂存改动，否则说明采用工作区与 HEAD 对比。",
         "阅读相关 diff、需求和触及的所有权边界。",
         "识别 hack-risk 模式，并归并为不同 findings。",
         "写出 Markdown report，包含 recommendation、findings、有意例外和 coverage ledger。",
@@ -691,18 +771,18 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "消费 hack-review 报告，并在改代码前验证每个 finding。",
       lead: "一个响应工作流，把 hack-risk review findings 转化为有证据的修复、挑战或延续决策。",
       overview:
-        "在收到 hack-review 报告或等价 PR feedback 后使用此 skill。它会在改代码前为每个 finding、有意例外和 coverage gap 建立 disposition ledger，然后只修复仍成立的问题，并为被挑战或缩窄的条目保留证据。该 skill 仅支持显式调用：用户必须使用 `$receiving-hack-review` 调用；仅凭提示词匹配不会自动激活。",
+        "用此 skill 处理 hack-review 报告或等价反馈。它验证当前所有权，逐项处理问题、有意例外和覆盖缺口，单独核对过期项，并继续已授权的独立修复。必要的外部输入保护、原始反馈和无关工作会保留；有必要时只对受影响改动复审，避免递归循环。该 skill 仅支持显式调用：用户必须使用 `$receiving-hack-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "验证每个 hack-risk finding 在当前 diff 中是否仍成立。",
         "修复所有权问题，同时不机械删除必要 guard。",
         "关闭或延续 `Not covered` 所有权边界。",
       ],
       workflow: [
-        "阅读 review report，枚举每个 finding、exception 和 coverage gap。",
-        "在规划编辑前对当前代码验证每个条目。",
+        "阅读报告和用户期望，保留原始反馈，并枚举问题、例外和覆盖缺口。",
+        "逐项验证当前所有权和意图，核对过期反馈，不阻塞独立且已确认的工作。",
         "建立 disposition ledger：fix、disprove、narrow、confirm 或 carry forward。",
-        "应用有范围的修复，并命名受影响所有权边界和回归风险。",
-        "报告每个条目的最终 disposition，不 stage，除非明确要求。",
+        "实施已授权修复并针对性验证，保留真实外部输入保护和范围明确的例外。",
+        "报告每项处理结果和未解决的门禁问题；仅在有必要时复审，不递归启动接收流程。",
       ],
       outputs: [
         "覆盖整份报告的 disposition ledger。",
@@ -711,8 +791,8 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       ],
       guardrails: [
         "不要机械执行报告。",
-        "除非当前请求明确要求 staging 或 committing，否则不要 stage changes。",
-        "如果修复会扩大行为或削弱所有权边界，先缩窄或询问。",
+        "保留已有暂存内容；Git 操作遵循用户针对本任务的具体授权。",
+        "用证据或更窄的修复处理技术风险；仅在缺少用户决策或新增范围授权时询问。",
       ],
       entryPoints: [
         { description: "Disposition ledger 和证据优先响应规则。", label: "工作流" },
@@ -724,7 +804,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "审查代码变更是否引入用户可见行为回归。",
       lead: "一个 coverage-led 审计，用于发现破坏或退化的用户路径、默认值变化、陈旧数据和行为路径变化。",
       overview:
-        "当一个变更集需要用户可见行为门禁时使用此 skill。它审查声明范围，把有意可见变化与回归分开，在能澄清受影响路径时构建 scoped behavior-graph deltas，并写出报告，将每个触及 surface 标记为 reviewed、intentional、not covered 或 not relevant。该 skill 仅支持显式调用：用户必须使用 `$regression-review` 调用；仅凭提示词匹配不会自动激活。",
+        "当变更需要用户可见行为门禁时使用此 skill。它区分有意变化和回归，记录问题与覆盖情况，并在图能澄清路径时使用局部行为图。简单路径可直接追踪并对比输出。仅评审时止于报告；已授权的修复在保留报告后继续。该 skill 仅支持显式调用：用户必须使用 `$regression-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "检查重构或功能工作是否破坏了用户可见流程。",
         "审计 loading、error、permission、retry、ordering、export、email 或 CLI-output 变化。",
@@ -734,7 +814,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       workflow: [
         "设定或推断审查范围，并在可用时阅读需求。",
         "在判断行为前映射触及的用户可见 surfaces。",
-        "为可建图的用户可见或未知影响 surface 构建 scoped behavior graph baseline。",
+        "用直接证据追踪行为变化；当分支、副作用或所有权变化需要图示时，构建局部行为图。",
         "把当前行为与基线、意图和用户期望对比。",
         "写出所有不同 findings，而不是只写前几个。",
         "在 coverage ledger 中记录有意可见变化和未覆盖 surfaces。",
@@ -742,7 +822,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       outputs: [
         "一份 Markdown regression-review report。",
         "与 findings 和 coverage 对齐的 gate recommendation。",
-        "完整 findings index、behavior graph deltas 和 coverage ledger。",
+        "完整问题索引和覆盖记录，以及有助于解释路径的行为图差异。",
       ],
       guardrails: [
         "不要静默抽样大范围。",
@@ -760,7 +840,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       blurb: "消费 regression-review 报告，并在改代码前验证每个 finding。",
       lead: "一个响应工作流，用当前证据和有范围修复解决 regression-review findings。",
       overview:
-        "在收到 regression-review 报告或相关 PR feedback 后使用此 skill。它会在编辑前用当前代码验证每个 finding、behavior graph delta、有意可见变化和 coverage gap，然后修复已证明的回归，并用证据挑战过时或有意的 findings。该 skill 仅支持显式调用：用户必须使用 `$receiving-regression-review` 调用；仅凭提示词匹配不会自动激活。",
+        "用此 skill 处理回归报告或相关反馈。它根据当前行为和产品要求验证问题、图示证据、有意变化和覆盖情况，逐项核对过期反馈，并继续已授权的修复。已确认的产品行为和原始反馈会保留；有必要时只对受影响改动复审，避免递归循环。该 skill 仅支持显式调用：用户必须使用 `$receiving-regression-review` 调用；仅凭提示词匹配不会自动激活。",
       bestFor: [
         "用当前 diff 和基线重新检查 regression gate。",
         "把 behavior graph deltas 与 findings 和 coverage rows 对齐。",
@@ -768,12 +848,12 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
         "把真实回归与有意产品变化分开。",
       ],
       workflow: [
-        "阅读报告并列出每个 finding、有意变化和未覆盖 surface。",
+        "阅读报告和用户期望，保留原始反馈，并列出问题、有意变化和未覆盖部分。",
         "把 behavior graph deltas 与当前代码路径和 coverage ledger 对齐。",
-        "用当前代码、基线和可见行为验证每个条目。",
+        "逐项验证当前路径和产品意图，核对过期反馈，不阻塞独立修复。",
         "编辑前建立 disposition ledger。",
-        "用窄范围修改修复已确认回归。",
-        "报告每个条目的 disposition，并保持 Git staging 不变，除非被要求。",
+        "在已有授权范围内修复确认的回归，运行针对性验证和仓库要求的检查。",
+        "报告每项处理结果和未解决的门禁问题；返回必要复审的剩余发现，不递归启动接收流程。",
       ],
       outputs: [
         "完整 disposition ledger。",
@@ -782,7 +862,7 @@ const skillTranslations: Partial<Record<Locale, Record<string, SkillTranslation>
       ],
       guardrails: [
         "不要盲目应用 review feedback。",
-        "除非当前请求明确要求，否则不要 stage changes。",
+        "保留已有暂存内容；Git 操作遵循用户针对本任务的具体授权。",
         "解决聚焦 regression finding 时，不要扩大用户可见行为。",
       ],
       entryPoints: [

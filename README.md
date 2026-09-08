@@ -38,7 +38,7 @@ If you are deciding what to install, start here:
 - [`split-commits`](#split-commits) - split a mixed working tree into focused local commits
 - [`multitask-coordinator`](#multitask-coordinator) - coordinate multi-step work with hierarchical task and decision ownership
 - [`delegate-to-cursor-sdk`](#delegate-to-cursor-sdk) - route bounded work through cursor-delegate with reviewed packets and owned cleanup
-- [`plan-mode`](#plan-mode) - plan complex or risky work before editing
+- [`plan-mode`](#plan-mode) - create editable implementation plans within the requested scope
 - [`debug`](#debug) - batch broad first-pass breakpoints, then prove, repair, and verify runtime bugs
 - [`bugbot`](#bugbot) - persist introduced-bug reports, then recognize report-repair intent
 - [`code-review`](#code-review) - run product-grounded deep reviews with bounded report lineage
@@ -162,7 +162,7 @@ Key entry points:
 
 ### `exhaustive-code-slimmer`
 
-[`skills/exhaustive-code-slimmer/`](./skills/exhaustive-code-slimmer/) exhaustively searches for behavior-preserving code reductions. It combines audit scripts, deletion-first candidate search, oracle design, and an approval gate for architecture-level refactors so slimming improves maintainability instead of producing dense or risky code. Invocation is explicit-only: a user must invoke `$exhaustive-code-slimmer`; matching prompts do not activate it automatically.
+[`skills/exhaustive-code-slimmer/`](./skills/exhaustive-code-slimmer/) exhaustively searches for behavior-preserving code reductions through audit scripts, deletion-first candidate search, and an oracle for each candidate combination. Audit-only requests stop at recommendations. Implementation follows already-approved scope; unresolved architecture decisions receive concrete options without blocking independent authorized cleanup. Invocation is explicit-only: a user must invoke `$exhaustive-code-slimmer`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -185,7 +185,7 @@ Key entry points:
 
 ### `reduce-reinvention`
 
-[`skills/reduce-reinvention/`](./skills/reduce-reinvention/) identifies and reduces duplicated effort across code, libraries, services, templates, docs, platform workflows, and architecture decisions. It combines a reuse-first workflow with audit scripts and decision templates so teams can adopt, adapt, consolidate, or justify divergence with evidence.
+[`skills/reduce-reinvention/`](./skills/reduce-reinvention/) identifies and reduces duplicated effort across code, libraries, services, templates, docs, platform workflows, and architecture decisions. It combines a reuse-first workflow with audit scripts and decision templates so teams can adopt, adapt, consolidate, or justify divergence with evidence. Audits and plans return recommendations; implementation, asset catalogs, and ongoing governance follow the requested delivery scope.
 
 Install:
 
@@ -329,7 +329,7 @@ Key entry points:
 
 ### `split-commits`
 
-[`skills/split-commits/`](./skills/split-commits/) helps break a mixed working tree into a sequence of focused local commits. It stages one logical batch at a time, asks `$git-commit` for a message, and requires explicit confirmation before each `git commit`.
+[`skills/split-commits/`](./skills/split-commits/) helps break a mixed working tree into a sequence of focused local commits. It stages one logical batch at a time and asks `$git-commit` for a message. It honors user authorization for individual batches or the whole sequence, requesting confirmation for a prepared batch only when needed. A requested per-batch confirmation remains binding; the workflow does not push.
 
 Install:
 
@@ -409,7 +409,7 @@ Key entry points:
 
 ### `plan-mode`
 
-[`skills/plan-mode/`](./skills/plan-mode/) mirrors Cursor's Plan Mode loop for complex, ambiguous, risky, or multi-file work: create a disk-backed editable Markdown plan, research the codebase into file/code references, ask focused clarification questions, maintain buildable todos, pressure-test non-trivial plans with `$grill-me`, and build only after the plan is approved.
+[`skills/plan-mode/`](./skills/plan-mode/) creates a disk-backed editable Markdown plan when the user requests planning, a saved plan file, or architecture/tradeoff analysis. It researches concrete file/code references, resolves material questions, and maintains buildable todos. Planning-only requests stop before implementation; plan-and-build requests continue within existing authorization. Complexity or multiple files alone do not introduce an approval gate. Use `$grill-me` for a requested interview or unresolved user decisions that benefit from one.
 
 Install:
 
@@ -419,11 +419,11 @@ npx skills@latest add JUNERDD/skills --skill plan-mode
 
 Best for:
 
-- planning implementation for broad or multi-file tasks before editing
+- preparing a requested implementation plan for broad or multi-file work
 - tracing routes, data flow, architecture constraints, tradeoffs, or risky operations
 - maintaining an editable plan document with file references and checkbox todos
-- invoking `$grill-me` to pressure-test meaningful assumptions, risks, and rollout edges
-- building all or selected todos only after the user approves the plan
+- invoking `$grill-me` for an interview or material unresolved user decisions
+- building all or selected todos within existing authorization, or handing off a planning-only result
 
 Key entry points:
 
@@ -470,7 +470,7 @@ The `debug` skill is designed to prevent speculative fixes by forcing a prove-it
 5. When a native debugger is attached and pausing is safe, install every safe nonredundant initial breakpoint before the first `run` or `continue`; issue single-location debugger calls back-to-back, and after a pause add the entire newly justified causal-interval batch before resuming. Use non-pausing probes when pause perturbation is unsafe.
 6. Resume the current investigation's exact ready file before any start attempt. Reuse a healthy collector and existing dashboard across turns and run IDs without scanning the workspace or reopening UI; start a collector only when none is recorded, the recorded session is missing or unreachable, or the user or host explicitly requires isolation or replacement. Newly established browser-capable local sessions automatically attempt to open and confirm the dashboard; only a verified host without a usable local graphical browser opts out.
 7. Create shared debug helpers only when justified, resolve every temporary cross-file reference from its actual importer with the target project's module system, optionally use `debug_import_path.py` for slash-delimited file-relative systems, and pass native resolution plus compile, payload-cost, privacy, correlation, adapter, cardinality, and collector gates; every accepted probe occurrence must remain a distinct persisted record. After frozen analysis finishes and before the next pass, remove superseded debug logging and breakpoints, clear stale collector evidence while still frozen, run `debug_session.py resume-recording`, require live status, and copy the refreshed status/URL line before every user-owned reproduction.
-8. Collect one clean terminal run or bounded observation window, detach its producers, flush the chosen logger or runtime adapter, reconcile the bounded source prefix with persisted NDJSON, freeze the collector, then classify every hypothesis while recording remains frozen.
+8. Collect one clean terminal run or bounded observation window. Interpret the user's reply in context to recognize a completed handoff without requiring a fixed phrase, then detach producers, flush the chosen logger or runtime adapter, reconcile the bounded source prefix with persisted NDJSON, freeze the collector, and classify every hypothesis while recording remains frozen. User-reported completion does not prove complete capture.
 9. Prove origin, propagation, and symptom or add only probes for the smallest unresolved interval; keep one evolving ledger through every material transition.
 10. For diagnosis-only work, preserve evidence and remove temporary probes, debug logs, and breakpoints before reporting; otherwise treat the root-cause result as intermediate, repair the causal mechanism immediately, verify separately, then remove temporary instrumentation and clear or stop owned logging artifacts.
 
@@ -565,7 +565,7 @@ python3 skills/debug/scripts/local_log_collector/main.py \
 
 ### `bugbot`
 
-[`skills/bugbot/`](./skills/bugbot/) uses a two-phase workflow for local branch or uncommitted changes. Detection inventories tracked and untracked changes, recursively expands a diff-derived candidate frontier through relevant callers, callees, contracts, state, and error paths, and persists every distinct verified bug in a unique Markdown report with finding IDs, coverage, evidence, and a gate recommendation. The report is detection's only write: reviewed code and Git state remain untouched. After the report is shown, Bugbot infers repair intent from the full conversation rather than matching fixed confirmation phrases. Clear intent with no narrower scope applies to all unresolved findings in the latest unambiguous report; semantic references to particular findings narrow the repair. Bugbot still avoids staging, committing, pushing, or silently fixing newly discovered issues.
+[`skills/bugbot/`](./skills/bugbot/) uses a two-phase workflow for local branch or uncommitted changes. Detection inventories tracked and untracked changes, recursively expands a diff-derived candidate frontier through relevant callers, callees, contracts, state, and error paths, and persists every distinct verified bug in a unique Markdown report with finding IDs, coverage, evidence, and a gate recommendation. The report is detection's only write: reviewed code and Git state remain untouched during that phase. Bugbot recognizes repair intent from the full conversation, including an initial request to review and fix. Once the report is persisted, existing repair authorization carries into the fix phase without another approval round; review-only requests stop at the report. Clear repair intent with no narrower scope covers all unresolved findings in the latest unambiguous report, while semantic references select a subset. Repairs use targeted verification and required repository checks without unnecessary repeated testing. Bugbot still avoids staging, committing, pushing, or silently fixing distinct new issues.
 
 Install:
 
@@ -589,7 +589,7 @@ Key entry points:
 
 ### `code-review`
 
-[`skills/code-review/`](./skills/code-review/) turns a generic `/code-review` request into one frozen-scope deep review. It begins with a read-only orchestration assessment, requires authoritative expected-behavior evidence before treating product choices as defects, assigns stable semantic issue fingerprints, and persists a validated lineage-aware report. A receiving workflow may produce one implementation-delta post-review, but that generation is terminal and cannot automatically start another receiving cycle. The skill does not edit code or Git state unless the user separately requests fixes. Invocation is explicit-only: a user must invoke `$code-review`; matching prompts do not activate it automatically.
+[`skills/code-review/`](./skills/code-review/) turns a generic `/code-review` request into one frozen-scope deep review. It assesses orchestration in the coordinator, delegates when independent analysis or parallel coverage adds material value, requires authoritative expected-behavior evidence before treating product choices as defects, assigns stable semantic issue fingerprints, and persists a validated lineage-aware report. A receiving workflow may produce one implementation-delta post-review, but that generation is terminal and cannot automatically start another receiving cycle. The review phase stays read-only. When the user also requests fixes, it freezes the report before continuing the already-authorized implementation. Invocation is explicit-only: a user must invoke `$code-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -616,7 +616,7 @@ Key entry points:
 
 ### `thermo-review`
 
-[`skills/thermo-review/`](./skills/thermo-review/) performs an extremely strict structural code-quality review. It writes a Markdown report with a recursive candidate sweep, a 350-line maintained-source trigger for cohesion, dependency, and ownership analysis, severity-ordered maintainability findings, and a quality-gate recommendation while avoiding code changes unless the user explicitly asks for fixes. The threshold drives responsibility-boundary diagnosis rather than text compaction. Invocation is explicit-only: a user must invoke `$thermo-review`; matching prompts do not activate it automatically.
+[`skills/thermo-review/`](./skills/thermo-review/) performs an extremely strict structural code-quality review. It writes a Markdown report with a recursive candidate sweep, a 350-line maintained-source trigger for cohesion, dependency, and ownership analysis, severity-ordered findings, and a quality-gate recommendation. The threshold drives responsibility-boundary diagnosis. Review-only requests end at the report; already-authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$thermo-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -638,7 +638,7 @@ Key entry points:
 
 ### `receiving-thermo-review`
 
-[`skills/receiving-thermo-review/`](./skills/receiving-thermo-review/) consumes a thermo report and builds a disposition ledger for every finding, decomposition gap, recursive coverage row, line-count threshold item, and candidate sweep entry before deciding whether to fix, challenge, justify, narrow, or carry it forward. For oversized maintained source, it maps responsibilities and dependencies before choosing an in-scope cohesive extraction or canonical-owner move, an evidence-backed waiver, or an approval-gated follow-up; a smaller count alone is not closure. It also checks behavior parity for touched user-visible or unknown-impact surfaces so structural cleanup does not quietly introduce regressions. Invocation is explicit-only: a user must invoke `$receiving-thermo-review`; matching prompts do not activate it automatically.
+[`skills/receiving-thermo-review/`](./skills/receiving-thermo-review/) verifies structural feedback, decomposition, coverage, and line-count evidence against current code. It checks behavior parity and cohesive responsibility boundaries; a smaller count alone is not closure. Stale items are reconciled individually so independent authorized fixes can continue. It preserves the source report and unrelated Git state, accounts for unresolved gate items, and bounds justified follow-up review to affected changes without recursive receiving cycles. Invocation is explicit-only: a user must invoke `$receiving-thermo-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -659,7 +659,7 @@ Key entry points:
 
 ### `receiving-code-review`
 
-[`skills/receiving-code-review/`](./skills/receiving-code-review/) consumes a `code-review` report or equivalent PR feedback and reconstructs each problem's complete execution chain before assigning a disposition. It carries a claim from its real trigger and entry through guards, state/data propagation, persistence and external effects, failure handling, and terminal impact; preserves authoritative `Intentional` and other settled decisions across review generations; delegates only compatible confirmed fixes; and permits at most one terminal post-implementation review. Distinct adjacent issues discovered during re-review are returned as provisional residual candidates instead of silently expanding into another review/implementation loop. It preserves the user's Git index unless staging or publishing is explicitly requested. Invocation is explicit-only: a user must invoke `$receiving-code-review`; matching prompts do not activate it automatically.
+[`skills/receiving-code-review/`](./skills/receiving-code-review/) consumes a `code-review` report or equivalent PR feedback and reconstructs each problem's complete execution chain before assigning a disposition. It carries a claim from its real trigger and entry through guards, state/data propagation, persistence and external effects, failure handling, and terminal impact; preserves authoritative `Intentional` and other settled decisions across review generations; implements only compatible confirmed fixes in the coordinator or through justified delegation; and permits at most one terminal post-implementation review. Existing traces and test results may be reused after checking that they still apply to the current code, inputs, and contracts. Distinct adjacent issues discovered during re-review are returned as provisional residual candidates instead of silently expanding into another review/implementation loop. It preserves the user's Git index unless staging or publishing is explicitly requested. Invocation is explicit-only: a user must invoke `$receiving-code-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -672,7 +672,7 @@ Best for:
 - re-verifying every `F#`, `T#`, and uncovered `A#` against its complete end-to-end execution chain before changing code
 - formally challenging incorrect, overstated, or stale review claims with evidence
 - protecting authoritative product intent from being reopened without changed code, contract, or evidence
-- fixing confirmed correctness, security, contract, or test issues through a coding subagent
+- fixing confirmed correctness, security, contract, or test issues with proportionate implementation ownership
 - preserving staged work while keeping new fixes unstaged unless publication is requested
 
 Key entry points:
@@ -686,7 +686,7 @@ Key entry points:
 
 ### `hack-review`
 
-[`skills/hack-review/`](./skills/hack-review/) reviews whether an implementation is relying on hack-like tactics instead of sound ownership and abstraction boundaries. It produces a coverage-led reviewer report that enumerates all distinct hack-risk findings discovered within scope, records intentional exceptions, and marks uncovered ownership boundaries explicitly. Invocation is explicit-only: a user must invoke `$hack-review`; matching prompts do not activate it automatically.
+[`skills/hack-review/`](./skills/hack-review/) reviews brittle shortcuts, ownership leaks, and masked root causes. It reports distinct hack risks, justified exceptions, and uncovered boundaries. Without a named scope it prefers staged changes, then the working tree against HEAD. Review-only requests end at the report; already-authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$hack-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -709,7 +709,7 @@ Key entry points:
 
 ### `receiving-hack-review`
 
-[`skills/receiving-hack-review/`](./skills/receiving-hack-review/) consumes a `hack-review` report and builds a disposition ledger for every finding, intentional exception, and open ownership coverage gap before deciding whether to fix, challenge, confirm, or carry it forward. Invocation is explicit-only: a user must invoke `$receiving-hack-review`; matching prompts do not activate it automatically.
+[`skills/receiving-hack-review/`](./skills/receiving-hack-review/) verifies reports or equivalent feedback against current ownership and contracts. It accounts for each finding, intentional exception, and coverage gap, reconciles stale claims per item, and continues independent authorized fixes while preserving necessary external-input guards, source feedback, and unrelated work. Follow-up review is bounded to affected changes when justified, without recursive receiving cycles. Invocation is explicit-only: a user must invoke `$receiving-hack-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -731,7 +731,7 @@ Key entry points:
 
 ### `regression-review`
 
-[`skills/regression-review/`](./skills/regression-review/) reviews whether the current change set introduces user-visible behavioral regressions. It writes a coverage-led reviewer report that enumerates all distinct findings discovered within scope, records intentional visible changes, builds scoped behavior-graph deltas for affected surfaces when useful, and marks uncovered surfaces explicitly. Invocation is explicit-only: a user must invoke `$regression-review`; matching prompts do not activate it automatically.
+[`skills/regression-review/`](./skills/regression-review/) reviews user-visible behavioral regressions, separating intended product changes from defects and recording coverage gaps. It uses direct path and output evidence for simple flows, adding scoped behavior graphs when they clarify risk. Review-only requests end at the report; already-authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$regression-review`; matching prompts do not activate it automatically.
 
 Install:
 
@@ -754,7 +754,7 @@ Key entry points:
 
 ### `receiving-regression-review`
 
-[`skills/receiving-regression-review/`](./skills/receiving-regression-review/) consumes a `regression-review` report and builds a disposition ledger for every finding, behavior-graph delta, intentional visible change, and open coverage gap before deciding whether to fix, challenge, confirm, or carry it forward. Invocation is explicit-only: a user must invoke `$receiving-regression-review`; matching prompts do not activate it automatically.
+[`skills/receiving-regression-review/`](./skills/receiving-regression-review/) verifies findings, graph evidence, intended changes, and coverage against current behavior and product requirements. It reconciles stale claims per item and continues authorized fixes while preserving intended behavior and source feedback. It accounts for unresolved gate items and bounds justified follow-up review to affected changes without recursive receiving cycles. Invocation is explicit-only: a user must invoke `$receiving-regression-review`; matching prompts do not activate it automatically.
 
 Install:
 

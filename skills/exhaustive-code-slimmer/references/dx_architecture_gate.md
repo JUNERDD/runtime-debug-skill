@@ -18,7 +18,7 @@ Treat these as signals, not automatic conclusions:
 
 ## Approval requirement
 
-If a candidate touches architecture-level boundaries, it is approval-gated. Examples:
+Architecture-level candidates require approved scope. Existing user approval counts; a new audit or option note does not reset it. Examples of changes whose scope must be checked:
 
 - Moving modules across directories or packages.
 - Changing dependency direction.
@@ -28,7 +28,7 @@ If a candidate touches architecture-level boundaries, it is approval-gated. Exam
 - Introducing, removing, or replacing a public boundary, package, route group, or module contract.
 - Changing project layout, build graph, workspace structure, or test architecture.
 
-Before implementation, present 2-4 options and wait for explicit user selection or scope approval.
+When the necessary design or scope has not been approved, prepare concrete alternatives and ask for the unresolved decision before dependent implementation. Continue unrelated authorized cleanup. When the user already approved an option or scope, prepare its concrete execution and verification plan and proceed without another selection round.
 
 ## Option patterns
 
@@ -87,12 +87,12 @@ Option <N>: <architecture idea>
 
 ## Execution after approval
 
-Once the user approves an option:
+For an option or scope already approved by the user:
 
 1. Create a branch/checkpoint.
 2. Strengthen the oracle around affected public behavior.
 3. Convert the chosen architecture option into small candidates.
-4. Mark candidates as approved in the plan; only then run them with `--allow-approval-gated` when using `scripts/exhaustive_shrink.py`.
+4. Record which user decision covers each candidate. Before using `--allow-approval-gated` with `scripts/exhaustive_shrink.py`, filter the candidate file to that approved scope.
 5. Apply changes in the smallest behavior-preserving steps.
 6. Re-run audit after each accepted group because architecture cleanup often exposes new dead code.
 7. Report net code reduction and DX effects separately.

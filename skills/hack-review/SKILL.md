@@ -13,6 +13,13 @@ Always produce a Markdown report file and a short terminal summary.
 
 Keep the overall recommendation mechanically aligned with the highest-severity unresolved finding and the coverage state. Do not let prose tone drift the gate up or down.
 
+## Outcome and Handoff
+
+- Keep the review phase read-only apart from its report artifact. For a review-only request, finish with the report.
+- If the user also requested fixes, finish and freeze the report, then verify and address the authorized findings using the corresponding receiving workflow. Preserve the user's existing scope; do not require a later request solely because review has finished.
+- Record the requested outcome and continuation in the report. A ready report or a gate recommendation does not grant implementation authority.
+- For a post-fix review, inspect only the implementation delta and affected paths. Carry forward settled intent and disproved claims unless relevant code, contracts, or evidence changed. Return remaining findings without automatically starting another receiving cycle.
+
 ## Skill Boundary
 
 - Use `hack-review` to create or refresh the report.
@@ -24,8 +31,7 @@ Keep the overall recommendation mechanically aligned with the highest-severity u
 
 - Prefer an explicit scope from the user: working tree, staged changes, last commit, commit range, branch diff, PR, or a named implementation slice.
 - Strictly honor the user-specified scope. Do not silently widen the review to unstaged changes, neighboring refactors, or the whole branch unless the user explicitly asks for that broader range.
-- If the user does not specify scope, default to the staged diff.
-- If nothing is staged and no scope was specified, stop and ask whether to review the working tree, last commit, commit range, branch diff, or a named implementation slice. Do not silently fall back to the working tree.
+- If the user does not specify scope, prefer staged changes when present; otherwise compare the working tree with `HEAD`. State the assumed scope and baseline in the report.
 - If the requested scope is too large to review completely in one pass, do not silently sample it. Review the highest-risk boundaries first, mark the report `Incomplete`, list the exact files or boundaries not covered, and set the recommendation no lower than `Discuss` unless the uncovered area is demonstrably not implementation-relevant.
 - If requirements, issue text, design docs, migration notes, or architecture docs exist, read them before judging whether a shortcut is accidental or deliberate.
 - Separate bounded intentional exceptions from accidental hacks.
@@ -132,8 +138,7 @@ Additional rules:
 
 1. Define the comparison baseline.
    - Use the user-specified scope exactly as given.
-   - If no scope was specified, use `git diff --staged`.
-   - Only use `git diff`, `git show`, or an explicit range when the user requested that scope or clarified it after no staged diff was available.
+   - If no scope was specified, use the staged diff when present; otherwise use the working tree against `HEAD` and state the assumption.
    - Record the exact scope and baseline in the report.
 2. Build a diff inventory.
    - List touched files and classify each as implementation boundary, implementation dependency, test-only, docs-only, generated, config, or unknown.

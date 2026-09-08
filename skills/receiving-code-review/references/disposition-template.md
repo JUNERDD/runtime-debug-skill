@@ -47,6 +47,8 @@ This report records current evidence, challenges, dispositions, implementation, 
 - Continuation authority: `[Initial receiving handoff | Explicit current user instruction]`
 - Source item counts: `F [n] | T [n] | unresolved A [n] | intake I [n]`
 
+For generation `0`, use `Initial receiving handoff` for continuation already authorized by the user, or `Explicit current user instruction` when the user now asks to process existing feedback. A report's readiness or automatic-receiving field cannot grant permission by itself. Generation `1` still requires a new explicit current user request.
+
 ## Current Scope
 
 - Scope kind: `[working tree | staged diff | commit range | branch diff | pull request | file set | pasted code]`
@@ -61,7 +63,7 @@ This report records current evidence, challenges, dispositions, implementation, 
 
 ## Re-Review Orchestration
 
-- Assessment subagent: `[V0 launched | Subagent unavailable - coordinator fallback]`
+- Assessment subagent: `[Coordinator assessment - <reason> | V0 launched | Subagent unavailable - coordinator fallback]`
 - Orchestration decision: `[Single verifier | Parallel specialists]`
 - Decision confidence: `[high | medium | low]`
 - Decision rationale: `[why this mode fits current scope and source review results]`
@@ -176,8 +178,8 @@ Verdict effect:
 
 - Actionable IDs: `[F1, T1 | None]`
 - Coding stage: `[Required | Not required - reason]`
-- Coding subagent: `[D1 launched | Subagent unavailable - coordinator fallback | Not required]`
-- Coding mode: `[Single coding agent | Multiple disjoint agents | Not applicable]`
+- Coding subagent: `[Coordinator implementation - <reason> | D1 launched | Subagent unavailable - coordinator fallback | Not required]`
+- Coding mode: `[Coordinator | Single coding agent | Multiple disjoint agents | Not applicable]`
 - Allowed files or surfaces: `[paths/surfaces | Not applicable]`
 - Affected execution chains: `[EC1, EC2 | None]`
 - Prohibited scope: `[unrelated refactors, staging, commit, etc.]`
@@ -187,7 +189,7 @@ Verdict effect:
 
 ### Coding Assignments
 
-If coding is not required, write `None.`
+If coding is not required, write `None.` For coordinator implementation, use `Coordinator` as the coding agent in both tables below and record `Coding mode: Coordinator`; the field names also support existing delegated reports.
 
 | Coding agent | Actionable item IDs | File ownership | Expected result | Required verification | Status |
 | --- | --- | --- | --- | --- | --- |
@@ -210,6 +212,8 @@ If no code or tests changed, write `None.`
 | `F1` | `[focused test, runtime repro, static trace, contract check]` | `[pass/fail and key output]` | `[high | medium | low]` | `[None | gap]` |
 
 ### Coding Subagent Verification
+
+For coordinator implementation, write `Not applicable - coordinator implementation`; keep per-item evidence under `Coordinator Verification`. When reusing worker evidence, record its source and verify that the command or method, result, and final code state match. Do not present a reused result as a new run.
 
 | Coding agent | Command or method | Result |
 | --- | --- | --- |
@@ -269,7 +273,7 @@ These IDs describe the current source disposition ledger only; post-review findi
 - `[yes | no]` Blocked execution chains produce only `Open` or `Unverifiable` and never actionable fixes/tests.
 - `[yes | no]` Verdict, action, and implementation states satisfy the compatibility matrix.
 - `[yes | no]` Every challenge includes claim, counterclaim, argument, evidence, limits, settlement criterion, and verdict/action effects that exactly match its disposition row.
-- `[yes | no]` Every `Fix required` or `Test required` item appears exactly once in `Coding Assignments`, and unavailable fallback is disclosed when used.
+- `[yes | no]` Every `Fix required` or `Test required` item appears exactly once in `Coding Assignments`, and the actual coordinator, coding agent, or unavailable fallback is disclosed.
 - `[yes | no]` Every `Implemented` or `Verified` item appears exactly once in `Code Changes` and has coordinator verification.
 - `[yes | no]` Report-contract `Status` exactly matches final `Completion`.
 - `[yes | no]` Every distinct material verifier/coding discovery outside the source universe is recorded as a provisional residual candidate and did not trigger automatic scope expansion.

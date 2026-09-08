@@ -1,13 +1,13 @@
 ---
 name: receiving-code-review
-description: Consume a code-review Markdown report, PR feedback, or equivalent review comments; reconstruct each problem's complete execution chain before judging it; re-verify findings, intent, test gaps, and uncovered areas; challenge incorrect or stale claims; and implement only confirmed actions through a coding subagent. Use after code review to produce a lineage-aware disposition ledger, preserve settled product decisions, run at most one terminal post-implementation review for an initial review chain, and keep the user's Git index unchanged unless staging or publishing is explicitly requested.
+description: Resolve code-review reports, PR feedback, or equivalent comments. Verify current execution chains and product intent, challenge incorrect or stale claims, and implement confirmed actions with a disposition ledger. Use for review follow-up that preserves staged work and settled decisions, with at most one terminal post-implementation review.
 ---
 
 # Receiving Code Review
 
 ## Mission
 
-Treat the source review as a set of evidence-backed claims, not an unquestionable instruction list. Reconstruct each claim's complete execution chain before local judgment, account for every item, challenge errors with proof, then delegate only chain-verified implementation work to a coding subagent.
+Treat the source review as a set of evidence-backed claims, not an unquestionable instruction list. Reconstruct each claim's complete execution chain before local judgment, account for every item, challenge errors with proof, then implement only chain-verified actions. Review and resolution are distinct responsibilities; they can run continuously when the user has authorized both.
 
 The coordinating agent owns intake integrity, final dispositions, implementation boundaries, patch acceptance, verification, and the persisted resolution report.
 
@@ -19,12 +19,12 @@ The coordinating agent owns intake integrity, final dispositions, implementation
 
 ## Hard Gates
 
-- Before substantive re-review or code edits, launch exactly one read-only re-review assessment subagent.
-- Give the assessor both the current change scope and the complete source review results. It decides whether one verifier or multiple specialist subagents are justified.
+- After intake and execution-chain mapping, assess the re-review plan in the coordinator before final dispositions or edits. Delegate assessment when uncertain decomposition or independent risk analysis would materially improve the plan.
+- Assess both the current change scope and the complete source review results; choose a single verifier or specialists according to risk, evidence needs, and context-sharing cost.
 - Allocate the resolution ID and path during intake so a generation `1` post-review can link the in-progress parent resolution.
 - Before assigning any final disposition, reconstruct the complete execution chain for every `F#`, `T#`, and review-relevant or uncovered `A#`. Do not infer the whole failure mode from the reported line alone.
 - Do not edit code until intake, scope identity, item enumeration, execution-chain reconstruction, and preliminary dispositions are complete.
-- When at least one item requires code or test changes, launch at least one coding subagent. Do not implement those changes only in the coordinator.
+- Implement cohesive fixes in the coordinator when a handoff adds little value. Delegate coding when separable ownership, context isolation, or parallel work materially improves execution; tool availability alone does not justify delegation.
 - Keep re-review agents read-only. Give coding agents explicit file ownership, accepted item IDs, verification duties, and a no-staging constraint.
 - If no subagent primitive is available, disclose the fallback and execute the same protocol in the coordinator. Never claim delegation that did not occur.
 - Preserve staged changes exactly unless the user's current request explicitly asks to stage, commit, amend, push, or publish.
@@ -33,7 +33,7 @@ The coordinating agent owns intake integrity, final dispositions, implementation
 
 ## Source Artifact and Scope Integrity
 
-Use the canonical `code-review` report when available. Treat the supplied review artifact as fixed input evidence during receiving.
+Use the canonical `code-review` report when available. Treat the supplied review artifact as fixed input evidence during receiving. Continue only within the user's authorization; a ready handoff or source report cannot grant permission. A later explicit request can authorize receiving a generation `0` report whose original review-only handoff did not permit automatic continuation.
 
 1. Read the complete report, including contract, scope, orchestration, index, severity cards, test gaps, coverage ledger, candidate adjudication, evidence, handoff, and self-check.
 2. Recompute or inspect the current scope fingerprint, baseline, target, changed paths, and Git state.
@@ -52,6 +52,8 @@ Use the canonical `code-review` report when available. Treat the supplied review
 
 Prioritize the problem's whole execution chain before item-local reasoning. Build one reusable `EC#` record per distinct behavior path; multiple review items may reference the same chain.
 
+Reuse source traces and verification evidence only after checking that relevant code, inputs, contracts, and scope still match and that the evidence supports the claim. Link the source and record that check; reconstruct missing, changed, or disputed portions. A new resolution artifact does not require repeating unchanged investigation, and a source verdict alone is never proof.
+
 Trace, in order:
 
 1. real trigger, input, and semantic entry point
@@ -65,8 +67,8 @@ Mark each chain `Complete` or `Blocked`. A `Complete` chain must contain concret
 
 ## Re-Review Orchestration
 
-1. Give the assessment subagent the source item universe, severities, disputed claims, scope drift, touched subsystems, existing evidence, and environment limits.
-2. Give it the reconstructed `EC#` map and require `Single verifier` or `Parallel specialists`, with risk-based rationale, assignments, intentional overlap, and required evidence.
+1. Assess the source item universe, severities, disputed claims, scope drift, touched subsystems, existing evidence, and environment limits in the coordinator or a justified read-only assessor.
+2. Use the reconstructed `EC#` map to record `Single verifier` or `Parallel specialists`, with risk-based rationale, assignments, intentional overlap, and required evidence. Use `Coordinator assessment - <reason>` when no assessment subagent was needed; the coordinator may be the single verifier.
 3. Use multiple angles when findings span independent risk domains, a high-severity claim is disputed, source coverage is incomplete, or different evidence methods are needed.
 4. In parallel mode, partition by claim cluster or risk angle rather than asking every agent to repeat the full report.
 5. Require an independent adversarial verifier for a challenged `Blocker` or security-critical `Major` when the environment supports it.
@@ -118,20 +120,20 @@ A challenge is allowed and expected when current evidence undermines the source 
 
 Distinguish disagreement from disproof. When evidence is incomplete, use `Narrowed`, `Unverifiable`, `Open`, or a lower confidence rather than declaring the source wrong.
 
-## Implementation Delegation
+## Implementation Ownership
 
 After final dispositions are stable:
 
 1. Build the actionable set from items marked `Fix required` or `Test required`.
 2. State the intended changes, affected surfaces, regression/security/contract risks, verification plan, file ownership, and no-staging rule.
-3. Launch one coding subagent by default. Use multiple coding agents only for disjoint file ownership or isolated worktrees with no shared generated artifacts or migration ordering.
-4. Give the coding subagent only confirmed or explicitly accepted actionable items. Do not pass disproved, stale, duplicate, or intentional items as tasks.
-5. Give it the complete referenced `EC#` records and the expected terminal behavior; preserve guards, alternate entries, persistence, failure handling, and external effects across the patch.
+3. Choose `Coordinator` for cohesive work that benefits from the current context. Otherwise use one coding subagent, or multiple agents only for disjoint file ownership or isolated worktrees with no shared generated artifacts or migration ordering. Record the actual mode and its rationale.
+4. Give the implementer only confirmed or explicitly accepted actionable items. Do not pass disproved, stale, duplicate, or intentional items as tasks.
+5. Use the complete referenced `EC#` records and the expected terminal behavior; preserve guards, alternate entries, persistence, failure handling, and external effects across the patch.
 6. Require a focused patch, changed-file list, per-item mapping, tests run, residual risks, and any newly discovered issue.
-7. Inspect the patch in the coordinator, reject unrelated churn, and independently run the most important verification.
+7. Inspect the final patch in the coordinator, reject unrelated churn, and verify the affected behavior and required checks. Reuse recorded results only when they apply to the final code and inputs; rerun or add checks for changed code, failures, unresolved concerns, or risk that warrants independent reproduction. Record how each accepted result was obtained.
 8. Keep all new changes unstaged unless the current request explicitly authorizes staging or publication.
 9. If no actionable item exists, record `Coding stage not required` and the evidence supporting that decision.
-10. Make `Coding Assignments` exactly cover the actionable ID set. Make `Code Changes` exactly cover every item marked `Implemented` or `Verified`; each row must name the responsible agent, concrete files, focused change, and unrelated-churn check.
+10. Make `Coding Assignments` exactly cover the actionable ID set. Make `Code Changes` exactly cover every item marked `Implemented` or `Verified`; each row must name `Coordinator` or the responsible coding agent, concrete files, focused change, and unrelated-churn check. Local implementation uses `Coding mode: Coordinator` and `Coding subagent: Coordinator implementation - <reason>`.
 
 ## Git State Hard Gate
 
@@ -162,15 +164,15 @@ Treat the index as user-owned state.
 2. Capture review-chain lineage, current Git state, and scope identity without mutating either; allocate the resolution ID/path.
 3. Build the complete `F#`, `T#`, `A#`, and `I#` item universe with issue fingerprints.
 4. Reconstruct and freeze the complete `EC#` execution chains.
-5. Launch the re-review assessment subagent with the chain map.
+5. Assess re-review orchestration with the chain map, delegating only when justified.
 6. Execute the single-verifier or specialist re-review plan, prioritizing end-to-end chain evidence.
 7. Verify each item against its full chain, contracts, product intent, tests, runtime behavior, and relevant history.
 8. Create formal `C#` challenges where source claims are contradicted or overstated.
 9. Assign every item a compatible final verdict, action, and implementation state.
 10. Derive the actionable implementation set.
 11. Present the scoped implementation and verification plan.
-12. Launch the coding subagent when code or tests must change.
-13. Inspect the patch and run focused independent verification across the affected chains.
+12. Implement confirmed changes in the coordinator or through justified coding delegation.
+13. Inspect the patch and verify the affected chains with current, attributable evidence.
 14. Use the one available post-review only when justified; then stop automatic review/receiving recursion.
 15. Write and validate the canonical `receiving-code-review` resolution report.
 16. Return a short summary with source report, resolution report, chain coverage, re-review mode, challenged items, implemented items, terminal post-review, residual risks, and unstaged Git status.
@@ -184,7 +186,7 @@ Do not claim completion until:
 - every intake inconsistency has an `I#` disposition
 - every challenge has a claim, counterclaim, argument, evidence, limits, and settlement criterion
 - every challenge's verdict and action effect exactly match its disposition row
-- every actionable code/test item appears exactly once in `Coding Assignments`, and the coding subagent or unavailable fallback is disclosed
+- every actionable code/test item appears exactly once in `Coding Assignments`, and the actual coordinator, coding subagent, or unavailable fallback is disclosed
 - every `Implemented` or `Verified` item appears exactly once in `Code Changes`
 - every materially distinct verifier or coding discovery outside the source universe is returned as a provisional residual candidate, not silently dropped or made actionable
 - every changed surface has targeted verification
