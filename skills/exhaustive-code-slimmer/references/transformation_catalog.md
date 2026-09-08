@@ -49,7 +49,7 @@ Reject or defer a candidate if it relies on any of these without evidence:
 
 ## Approval-gated architecture candidates
 
-Generate these only as proposals until the user approves an architecture scope. Mark them with `requires_user_approval: true` in candidate JSONL.
+Check the user's existing architecture authorization first. Keep candidates outside that scope as proposals with `requires_user_approval: true`; record the covering user decision for approved candidates rather than introducing a new approval round.
 
 - Collapse pass-through service/manager/adapter layers.
 - Move code from technical folders into feature/domain slices.

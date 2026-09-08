@@ -14,11 +14,11 @@
 
 Use subagents to increase independent coverage and reduce blind spots, not to manufacture consensus or duplicate the same pass. The coordinator remains accountable for the final report.
 
-The first subagent is always an orchestration assessor. It performs risk decomposition, not the final code review.
+The coordinator normally assesses orchestration. Add a read-only assessor when uncertainty about decomposition or independent risk analysis makes that handoff useful; it is not a prerequisite for single-reviewer or specialist execution.
 
 ## Assessment Subagent
 
-Launch the assessor after collecting only minimal scope metadata. Keep it read-only.
+Use the assessment contract below in the coordinator. Delegate it only when justified by scope and risk; collect minimal scope metadata first and keep any assessor read-only.
 
 Give it:
 
@@ -70,7 +70,7 @@ assumptions:
   - <assumption>
 ```
 
-For `single-reviewer`, still return one `R1` assignment that defines the deep-review plan.
+For `single-reviewer`, still return one `R1` assignment that defines the deep-review plan; identify the coordinator as its executor when applicable. In the report, use `Coordinator assessment - <reason>` when assessment was local, `R0 launched` when delegated, or the unavailable fallback when delegation could not run.
 
 ## Decision Heuristics
 
@@ -186,7 +186,7 @@ A specialist conclusion is input evidence, not an authority. The final report mu
 
 ## Fallbacks and Failure Handling
 
-- If subagents are unavailable, use the assessor output contract in the coordinator and record the fallback in the report.
+- If useful delegation cannot run because subagents are unavailable, use the same contract in the coordinator and record the fallback. Choosing local assessment is a normal execution mode, not an unavailable-tool claim.
 - If one specialist fails or returns incomplete output, retry once with a narrower assignment when practical. Otherwise mark its surfaces `Not covered`.
 - If specialists conflict on a high-severity claim, run an independent focused verifier when available. If uncertainty remains approval-affecting, classify it as `Question` or lower confidence rather than forcing certainty.
 - If a specialist edits files or Git state, stop using its result, inspect the mutation, restore only changes known to belong to that specialist without disturbing user state, and disclose the incident.

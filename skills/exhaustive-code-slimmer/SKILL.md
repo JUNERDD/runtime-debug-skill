@@ -7,13 +7,15 @@ description: Exhaustive code slimming, code-pruning, and approval-gated architec
 
 Goal: remove the maximum amount of maintained code that can be removed without changing externally observable behavior. Prefer deletion over abstraction, simple code over clever code, good DX over theoretical purity, and measured evidence over taste.
 
+For audit-only or planning-only requests, stop at the requested findings or proposal. When implementation is already authorized, carry that scope through candidate review and verification without requiring the user to approve it again.
+
 ## Non-negotiables
 
 - Establish a behavior-preservation oracle before changing code: build, typecheck, tests, lint if relevant, smoke commands, snapshots, API contracts, and migration checks.
 - Apply the code-cleanliness guide in `references/code_cleanliness_guide.md`. Slim code must remain readable, explicit, locally understandable, and easy to change; do not create dense, clever, minified, or “golfed” code.
 - Never count minification, obfuscation, whitespace-only deletion, or comment deletion as code slimming unless the user explicitly asks for artifact-size minification.
 - Do not delete public API, migrations, generated files, feature-flag branches, compatibility shims, security checks, operational logging, or configuration without evidence that the oracle covers them or the user has declared them removable.
-- When architecture appears unreasonable, pause structural changes and propose 2-4 DX-improving architecture options. Do not perform architecture-level refactoring, boundary moves, framework migration, module reshaping, or abstraction collapse until the user explicitly approves one option or scope.
+- Before an architecture-level change, check whether the user has already approved its option or scope. Continue approved work with a concrete migration and verification plan. For additional boundary moves, framework changes, module reshaping, or abstraction collapse, prepare feasible DX-improving alternatives and request only the missing scope decision; unrelated authorized cleanup may continue.
 - Work from version control or a clean checkpoint. Keep every accepted deletion attributable to a candidate and oracle result.
 - Continue until a fixed point: no untested candidate remains in the current search frontier and no accepted deletion enables new candidates.
 
@@ -27,8 +29,8 @@ Goal: remove the maximum amount of maintained code that can be removed without c
    - Inspect whether the current architecture blocks effective slimming: circular dependencies, god modules, deep pass-through layers, scattered config, duplicated boundaries, framework-fighting patterns, unclear ownership, over-abstracted services/managers/adapters, or brittle build/test ergonomics.
    - Run `scripts/architecture_dx_scan.py --repo . --json-output /tmp/architecture-dx.json --markdown-output /tmp/architecture-dx.md` for heuristic signals when a repository is available.
    - If the architecture is reasonable, continue with deletion-first shrinking.
-   - If the architecture is unreasonable, produce an approval-gated architecture note with 2-4 options. Each option must include DX benefit, expected code-slimming payoff, migration shape, risk, oracle requirements, and whether net maintained code should decrease.
-   - Until the user approves an option, only perform reversible audit, candidate enumeration, and non-structural deletion planning. Do not execute structural refactor candidates.
+   - If architectural changes are needed, first reconcile them with the user's existing approval. For unresolved choices, prepare an architecture note with feasible alternatives, DX benefit, code-slimming payoff, migration shape, risk, oracle requirements, and expected net code reduction.
+   - Keep unapproved architecture candidates as proposals. Continue independently authorized deletion or local-refactor work, and execute structural candidates only within approved scope.
 
 3. **Oracle**
    - Build the strongest available oracle. If absent, create minimal smoke tests before deletion.
@@ -43,7 +45,7 @@ Goal: remove the maximum amount of maintained code that can be removed without c
    - For small independent sets, perform exact subset search: test every subset and keep the highest deletion score that passes the oracle.
    - For large sets, partition by module/file/dependency class, run exact search inside each partition, then run global greedy/ddmin-style passes over survivors. Repeat inventory → exact/partitioned search → oracle until fixed point.
    - Use `scripts/exhaustive_shrink.py --repo . --candidates candidates.jsonl --oracle "<command>" --mode exact` for exact search, or `--mode partition-exact` when full powerset search is too large.
-   - Approval-gated candidates are skipped by default. Include them only after explicit user approval with `--allow-approval-gated`.
+   - Approval-gated candidates are skipped by default. Use `--allow-approval-gated` only after filtering the candidate file to the explicitly approved scope; the flag does not authorize other candidates.
 
 6. **Refactor only when it deletes net code**
    - Consolidate duplicate logic, inline unnecessary wrappers, collapse indirection, simplify control flow, and remove abstractions only when the diff reduces maintained code and improves clarity.
@@ -79,7 +81,7 @@ Option <N>: <architecture idea>
 - Recommended when:
 ```
 
-Do not start implementation until the user chooses an option or narrows the scope.
+Use this choice handoff only while the architecture decision is unresolved. If the user has already selected an option or approved its scope, record that decision and proceed within it.
 
 ## References
 

@@ -13,7 +13,14 @@ Always produce a Markdown report file and a short terminal summary.
 
 Keep the overall recommendation mechanically aligned with the highest-severity unresolved finding and the coverage state. Do not let prose tone drift the gate up or down.
 
-Use behavior graphs as lightweight review artifacts for touched user-visible or unknown-impact surfaces, not as whole-repo call graphs.
+Use scoped behavior graphs when they clarify affected user-visible or unknown-impact paths. Direct path evidence is sufficient for simple flows.
+
+## Outcome and Handoff
+
+- Keep the review phase read-only apart from its report artifact. For a review-only request, finish with the report.
+- If the user also requested fixes, finish and freeze the report, then verify and address the authorized findings using the corresponding receiving workflow. Preserve the user's existing scope; do not require a later request solely because review has finished.
+- Record the requested outcome and continuation in the report. A ready report or a gate recommendation does not grant implementation authority.
+- For a post-fix review, inspect only the implementation delta and affected paths. Carry forward settled intent and disproved claims unless relevant code, contracts, or evidence changed. Return remaining findings without automatically starting another receiving cycle.
 
 ## Set Scope First
 
@@ -122,7 +129,7 @@ Additional rules:
 
 ## Scoped Behavior Graphs
 
-Build a scoped behavior graph after the diff inventory, before classifying findings, when a touched file can affect a user-visible or unknown-impact surface.
+Use a scoped behavior graph when relationships between entry points, inputs, guards, transforms, and effects materially clarify the risk. For a simple linear path, a concise trace or output comparison is sufficient; record that evidence instead of drawing a graph solely because a file is user-visible.
 
 Keep each graph focused on one surface and these node types:
 
@@ -143,14 +150,14 @@ For each graph, compare the baseline path from the chosen baseline with the afte
 2. Build a diff inventory.
    - List touched files and classify each as user-visible surface, user-visible dependency, test-only, docs-only, generated, config, or unknown.
    - Use repository structure, route maps, exports, commands, schedules, feature flags, and call sites to avoid missing indirect user-visible paths.
-3. Build scoped behavior graphs for user-visible and unknown-impact surfaces.
+3. Use scoped behavior graphs for user-visible and unknown-impact surfaces when they clarify the path or risk.
    - Do not graph docs-only, generated-only, or test-only paths unless they feed visible output.
    - Include entry, input, guards, transform, and output/effect nodes where applicable.
    - Keep the graph shallow enough to support review; do not attempt a complete static call graph.
 4. Build the coverage ledger before writing findings.
    - Identify every route, page, component, API consumer, command, job, config default, flag path, email/export/output, and persisted side effect touched by the diff.
    - Add each surface to the ledger even if it later has no finding.
-   - Use graph coverage to catch missing surfaces, but keep the ledger as the authoritative coverage index.
+   - Use graphs or direct path evidence to catch missing surfaces; keep the ledger as the authoritative coverage index.
 5. Trace behavior deltas for every ledger surface.
    - Compare before and after behavior for each surface.
    - Look for removed guards, changed branching, altered ordering, serialization changes, loading changes, empty states, error paths, retries, cache keys, stale data, session/auth checks, and output formatting.
@@ -171,7 +178,7 @@ For each graph, compare the baseline path from the chosen baseline with the afte
    - Every finding in the action sections appears in `Complete Findings Index`.
    - Every `Finding F#` in `Coverage Ledger` has a matching card.
    - Every `Not covered` row has a reason and a concrete next step.
-   - Every graphable user-visible or unknown-impact surface has either a behavior graph delta row or a ledger reason for skipping it.
+   - Every user-visible or unknown-impact surface has graph or direct path evidence, or is explicitly marked as not covered.
    - The recommendation matches the mapping rules.
 
 ## Card Format

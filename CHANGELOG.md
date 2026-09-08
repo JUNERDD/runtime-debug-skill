@@ -127,7 +127,7 @@ This project uses SemVer for the collection version. GitHub release tags use the
 ### Changed
 
 - Added plan-mode and reduce-reinvention skills to the collection.
-- Expanded plan-mode with Cursor-style planning workflow guidance.
+- Expanded plan-mode with editable Markdown planning workflow guidance.
 - Refined git-commit commit drafting rules.
 - Added scoped behavior-graph guidance to regression-review and receiving-regression-review.
 - Fixed debug collector dashboard detail scrolling for large payloads.

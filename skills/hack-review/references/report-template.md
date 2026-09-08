@@ -3,6 +3,8 @@
 ## Scope
 
 - Review date: `YYYY-MM-DD`
+- Requested outcome: `[review only | review and fixes | post-fix review]`
+- Continuation: `[report only | continue already-authorized fixes | return post-fix findings]`
 - Scope reviewed: `[working tree | staged diff | commit range | branch diff | PR | implementation slice]`
 - Baseline: `[HEAD | commit SHA | branch | design doc | existing abstraction]`
 - Completion: `[Complete within reviewed scope | Incomplete - reason]`

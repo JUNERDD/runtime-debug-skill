@@ -9,9 +9,16 @@ description: Perform an extremely strict, report-writing code quality review foc
 
 Treat the requested scope as a harsh maintainability and structural quality gate. Correct behavior is not enough; the implementation must also leave the codebase simpler to reason about.
 
-Always produce a Markdown report file and a short terminal summary. Do not edit code unless the user explicitly asks for fixes after the review.
+Always produce a Markdown report file and a short terminal summary.
 
 The primary job is to exhaustively identify distinct structural review findings in the reviewed scope: missed simplifications, spaghetti growth, file-size pressure, weak abstraction boundaries, type-contract muddiness, duplicated logic, and ownership drift.
+
+## Outcome and Handoff
+
+- Keep the review phase read-only apart from its report artifact. For a review-only request, finish with the report.
+- If the user also requested fixes, finish and freeze the report, then verify and address the authorized findings using the corresponding receiving workflow. Preserve the user's existing scope; do not require a later request solely because review has finished.
+- Record the requested outcome and continuation in the report. A ready report or a gate recommendation does not grant implementation authority.
+- For a post-fix review, inspect only the implementation delta and affected paths. Carry forward settled intent and disproved claims unless relevant code, contracts, or evidence changed. Return remaining findings without automatically starting another receiving cycle.
 
 ## Skill Boundary
 
@@ -137,7 +144,7 @@ Do not lead with style, naming, formatting, or broad taste preferences unless th
 
 ## Guardrails
 
-- Do not make code changes during review unless the user explicitly asks for fixes.
+- Keep review read-only; after freezing the report, continue fixes only within the user's existing authorization.
 - Do not stage, commit, push, or mutate Git state.
 - Do not silently widen the review scope.
 - Do not recommend broad rewrites when a narrow decomposition or simpler model would address the risk.

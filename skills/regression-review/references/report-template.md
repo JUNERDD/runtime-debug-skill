@@ -3,6 +3,8 @@
 ## Scope
 
 - Review date: `YYYY-MM-DD`
+- Requested outcome: `[review only | review and fixes | post-fix review]`
+- Continuation: `[report only | continue already-authorized fixes | return post-fix findings]`
 - Scope reviewed: `[working tree | staged diff | commit range | branch diff | PR]`
 - Baseline: `[HEAD | commit SHA | branch | PR base]`
 - Completion: `[Complete within reviewed scope | Incomplete - reason]`
@@ -171,5 +173,5 @@ Use this section for meaningful candidates that were investigated and dismissed,
 - `[yes | no]` Every finding in an action section appears in `Complete Findings Index`.
 - `[yes | no]` Every `Finding F#` ledger row has a matching card.
 - `[yes | no]` Every `Not covered` row has a reason and next verification step.
-- `[yes | no]` Every graphable user-visible or unknown-impact surface has a behavior graph delta row or a ledger reason for skipping it.
+- `[yes | no]` Every user-visible or unknown-impact surface has graph or direct path evidence, or is explicitly marked as not covered.
 - `[yes | no]` Recommendation follows the mapping rules from the skill.

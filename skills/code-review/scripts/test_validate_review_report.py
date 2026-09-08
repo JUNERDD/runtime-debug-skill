@@ -252,6 +252,39 @@ class ValidateReviewReportTests(unittest.TestCase):
         result = self.run_validator(review_report())
         self.assertEqual(result.returncode, 0, msg=result.stderr)
 
+    def test_accepts_ready_review_only_report_without_automatic_receiving(self) -> None:
+        report = review_report().replace(
+            "Automatic receiving permitted: `Yes`", "Automatic receiving permitted: `No`"
+        )
+        result = self.run_validator(report)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_regeneration_handoff_cannot_allow_automatic_receiving(self) -> None:
+        report = review_report().replace(
+            "Handoff status: `Ready for receiving-code-review`",
+            "Handoff status: `Regenerate before implementation`",
+        )
+        result = self.run_validator(report)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("must not permit automatic receiving", result.stderr)
+
+    def test_accepts_coordinator_assessment_with_rationale(self) -> None:
+        report = review_report().replace(
+            "R0 launched", "Coordinator assessment - one cohesive contract trace"
+        )
+        result = self.run_validator(report)
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+    def test_rejects_unexplained_coordinator_assessment(self) -> None:
+        for reason in ("None", "<reason>"):
+            with self.subTest(reason=reason):
+                report = review_report().replace(
+                    "R0 launched", f"Coordinator assessment - {reason}"
+                )
+                result = self.run_validator(report)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("concrete rationale", result.stderr)
+
     def test_rejects_non_authoritative_defect_basis(self) -> None:
         report = review_report(
             expected_basis="kind:code-history; strength:inferred; evidence:git history"

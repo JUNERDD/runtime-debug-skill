@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Perform a deep, scoped review of a working tree, staged diff, commit range, branch diff, pull request, focused file set, or pasted code. Use for `/code-review`, PR or diff review, merge-safety assessment, and one bounded post-implementation review. Begin with a read-only orchestration assessment, ground expected behavior in authoritative product or contract evidence, trace propagated risk, persist a canonical lineage-aware report, and never edit code or Git state unless the user separately requests fixes. A post-implementation report is terminal for its automatic review chain.
+description: Perform a deep, scoped review of diffs, pull requests, working trees, files, or pasted code. Use for `/code-review`, merge-safety assessment, or one bounded post-implementation review. Produce a product-grounded report with coverage and issue lineage; keep review read-only and continue already-authorized fixes only after freezing the report.
 ---
 
 # Code Review
@@ -19,12 +19,11 @@ The coordinating agent owns scope, final judgment, de-duplication, severity, and
 
 ## Hard Gates
 
-- Before substantive review, launch exactly one read-only orchestration-assessment subagent.
-- Before launching that assessor, inspect only enough Git and request metadata to identify the scope, baseline, changed-file inventory, diff size, and obvious constraints. Do not form findings first.
-- Let the assessor decide whether specialist subagents add material value. Do not equate depth with agent count.
+- Before substantive review, assess scope and risk in the coordinator using the baseline, changed-file inventory, diff size, and known constraints.
+- Delegate that assessment only when uncertain decomposition or independent risk analysis would materially improve the plan. Choose specialists by their coverage benefit and context-sharing cost; tool availability alone does not justify delegation.
 - If the environment has no subagent primitive, record `Subagent unavailable` and execute the same assessment protocol in the coordinator. Never claim a subagent ran when it did not.
 - Keep every review subagent read-only. Do not edit files, stage, commit, push, reset, checkout, rebase, or mutate Git state.
-- Do not make code changes during this skill unless the user explicitly changes the task from review to implementation.
+- Keep the review phase read-only. If the user also requested fixes, finish and freeze the report, then continue within that existing implementation authorization without requiring a separate request. A review-only request ends with the report.
 - Put every report in a review chain. Use generation `0` for the frozen initial scope and generation `1` only for the implementation delta plus affected execution chains after a `receiving-code-review` resolution.
 - Treat generation `1` as terminal: write the report, return remaining findings to the user or product owner, and do not automatically invoke `receiving-code-review`. Any later work requires an explicit user request and a new generation `0` chain.
 - Do not classify a disputed product choice as `Blocker`, `Major`, or `Minor` without an authoritative expected-behavior basis. Use `Question` when product intent is unconfirmed.
@@ -42,8 +41,8 @@ The coordinating agent owns scope, final judgment, de-duplication, severity, and
 
 ## Orchestration
 
-1. Give the assessment subagent the scope identity, diff inventory, change statistics, touched subsystems, known requirements, and environment limitations.
-2. Require a structured decision: `Single reviewer` or `Parallel specialists`, with rationale, risk dimensions, proposed partitions, overlap plan, and verification needs.
+1. Assess the scope identity, diff inventory, change statistics, touched subsystems, known requirements, and environment limitations in the coordinator or a justified read-only assessor.
+2. Record a structured decision: `Single reviewer` or `Parallel specialists`, with rationale, risk dimensions, proposed partitions, overlap plan, and verification needs. Use `Coordinator assessment - <reason>` when no assessment subagent was needed; the coordinator may also be the single reviewer.
 3. Follow the decision unless concrete new evidence invalidates it. Record any override and reason.
 4. For parallel review, assign bounded, non-identical ownership. Typical angles include:
    - correctness, state, data flow, and API contracts
@@ -139,14 +138,14 @@ Downgrade an unproven suspected blocker rather than retaining a hand-wavy `Block
 - Persist scope identity, scope fingerprint, orchestration decision, specialist assignments, candidate adjudication, findings, test gaps, coverage, evidence, and a `Receiving Handoff` section.
 - Persist review-chain identity, generation, trigger, parent review and resolution, semantic issue keys and fingerprints, expected-behavior bases, and inherited-settlement reconciliation.
 - Treat the completed review report as a fixed input artifact. Do not rewrite it during receiving or implementation; record later dispositions and code changes in a separate `receiving-code-review` resolution report linked by Report ID.
-- A generation `0` report may be handed to `receiving-code-review`. A generation `1` report must use a terminal handoff and must not be consumed automatically.
+- A generation `0` report may be ready for `receiving-code-review` while `Automatic receiving permitted` is `No`: readiness describes the artifact, not user authorization. Use `Yes` only for a ready report with user-authorized continuation; review-only requests use `No`. A generation `1` report must use a terminal handoff and must not be consumed automatically.
 - Partition every non-Question finding and standalone test gap exactly once into actionable or deferred handoff IDs. List every `Question` and `Not covered` area in its matching open-ID field.
 - Run the validator and fix every error before claiming the report is complete.
 
 ## Workflow
 
 1. Resolve review-chain identity, generation, trigger, scope, baseline, target, and minimal diff inventory.
-2. Launch the orchestration-assessment subagent.
+2. Assess orchestration in the coordinator or delegate the assessment when justified.
 3. Record and execute the single-reviewer or specialist plan.
 4. Build the semantic diff inventory and `A#` coverage areas.
 5. Trace changed control, data, security, persistence, integration, and test paths.
@@ -161,7 +160,7 @@ Downgrade an unproven suspected blocker rather than retaining a hand-wavy `Block
 
 ## Final Self-Check
 
-- The assessment subagent ran, or the report honestly records the unavailable fallback.
+- The report records the actual assessment mode and rationale: coordinator, delegated assessor, or unavailable fallback.
 - The orchestration decision is supported by scope and risk, not arbitrary agent count.
 - Every specialist candidate was verified, rejected, merged, or retained with evidence.
 - Every changed review-relevant or unknown-impact area has an `A#` row.

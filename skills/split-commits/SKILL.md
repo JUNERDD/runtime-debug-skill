@@ -1,11 +1,15 @@
 ---
 name: split-commits
-description: Split a large or mixed Git working tree into multiple focused local commits. Use when changes span unrelated concerns, combine refactors with behavior changes, mix generated files with source edits, or contain separable hunks in the same file, and Codex needs to stage one logical batch at a time, invoke `$git-commit` to draft the staged commit message, present the staged batch for user confirmation, run `git commit` only after the user explicitly approves that batch, and repeat without pushing.
+description: Split a large or mixed Git working tree into focused local commits by staging one logical batch at a time and using `$git-commit` for staged-diff messages. Use when the user wants separable changes committed independently. Honor authorization for individual batches or the full sequence; ask about a prepared batch only when committing it is not already authorized. Do not push.
 ---
 
 # Split Commits
 
-Turn an overgrown working tree into a short sequence of focused local commits. Assemble each commit in the index first, hand it to `$git-commit` for the message, then stop for user confirmation before running `git commit`. Do not push as part of this skill.
+Turn an overgrown working tree into a short sequence of focused local commits. Assemble each commit in the index first, hand it to `$git-commit` for the message, then commit within the user's authorized scope. Ask for confirmation when that batch is not already covered. Do not push as part of this skill.
+
+## Authorization
+
+Read the current request and prior approvals together. An explicit request to split and commit the intended changes can authorize the whole sequence; approval of a particular batch covers only that batch. A request for a proposed split or messages alone does not authorize commits. Honor any instruction to confirm each batch, and do not treat silence as approval. Before asking again, check whether the existing authorization already covers the action and scope.
 
 ## Workflow
 
@@ -25,7 +29,7 @@ Turn an overgrown working tree into a short sequence of focused local commits. A
    - Order commits so each one is understandable on its own.
 4. Respect the current index.
    - If staged changes already match the next planned commit, keep them.
-   - If staged changes mix unrelated concerns, stop and ask before repartitioning the index.
+   - If staged changes mix unrelated concerns, preserve their content and repartition only when existing authorization covers reshaping that index; otherwise ask before changing it.
 5. Stage only the next logical batch.
    - Use `git add <path>` for whole files.
    - Use `git add -p <path>` when only some hunks belong.
@@ -39,10 +43,10 @@ Turn an overgrown working tree into a short sequence of focused local commits. A
    - Keep it if accurate.
    - Tighten it if it overstates the change or merges multiple concerns in the wording.
    - If `$git-commit` indicates the staged set is still mixed, do not commit it. Refine the staged batch and rerun `$git-commit`.
-9. Present the staged diff summary and the finalized message to the user, then ask for explicit confirmation for that one commit.
-   - Wait for confirmation before changing Git history.
+9. Present the staged diff summary and finalized message. Check them against the authorized sequence or batch.
+   - If covered, continue without another approval round. Otherwise ask for confirmation for this concrete batch and wait.
    - If the user declines, refine the staged batch or the message and ask again.
-10. Run `git commit` with the finalized message only after the user explicitly approves that staged batch.
+10. Run `git commit` with the finalized message only when the staged batch is covered by explicit user authorization.
 11. Re-run `git status --short` and continue with the next planned batch until the intended local commits are created.
 
 ## Grouping Heuristics
@@ -70,9 +74,9 @@ If two changes cannot be described honestly with one subject line, they likely d
 
 - Do not push.
 - Do not amend unless the user explicitly asks.
-- Do not run `git commit` until the user explicitly approves the current staged batch and message.
+- Do not run `git commit` outside the authorized batch or sequence, or bypass a requested per-batch confirmation.
 - Do not use destructive commands such as `git reset --hard` or `git checkout --`.
-- Do not silently unstage or restage a mixed index; ask first if the existing staged state must be reshaped.
+- Do not silently unstage or restage a mixed index; explain the intended repartition and ask first unless that action is already authorized.
 - Do not ask `$git-commit` to summarize unstaged changes. It must see staged changes only.
 - Stop and ask if the remaining edits are too entangled to split without guessing intent.
 

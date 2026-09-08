@@ -1,15 +1,11 @@
 ---
 name: receiving-thermo-review
-description: Consume a `thermo-review` Markdown report, PR feedback derived from one, or structural quality-gate feedback involving `Blocker`, `Major`, `Minor`, `Question`, `Complete Findings Index`, `Decomposition Gaps`, recursive coverage, line-count ledgers, candidate sweep logs, `Not covered` rows, or 350-line thresholds. Use when Codex must verify every structural item against the current checkout, build disposition and behavior-parity ledgers before editing, resolve oversized maintained-source findings through cohesive responsibility boundaries rather than count-only edits, fix, disprove, narrow, waive, or carry forward each item with evidence, avoid user-visible regressions, and leave Git staging untouched unless explicitly asked to stage, commit, or publish.
+description: Resolve thermo-review reports or structural quality feedback. Verify responsibility boundaries, decomposition gaps, 350-line findings, and behavior parity before applying scoped fixes or evidence-backed waivers. Use to process existing structural findings, challenge stale or misleading claims, and account for unresolved coverage without changing unrelated code or Git state.
 ---
 
 # Receiving Thermo Review
 
-## Purpose
-
-Use this skill after `thermo-review` has produced a report or equivalent structural quality feedback. Treat the report as an evidence-backed gate, not as an instruction list.
-
-Account for every finding, decomposition gap, 350-line threshold item, recursive coverage row, candidate sweep row, and uncovered structural area before claiming the gate is resolved.
+Treat structural review findings as claims to verify against current ownership, cohesion, dependencies, and behavior. A lower line count alone does not resolve structural risk.
 
 ## Boundary
 
@@ -17,34 +13,31 @@ Account for every finding, decomposition gap, 350-line threshold item, recursive
 - Use `receiving-thermo-review` to consume the report and decide what to fix, disprove, narrow, waive, or carry forward.
 - Use `receiving-code-review` for general correctness, security, contract, or test feedback.
 - Use `receiving-hack-review` for hack-risk ownership gates.
-- Use `regression-review` when a planned or completed structural fix has material or uncertain user-visible behavior impact.
+- Use a scoped `regression-review` when the user requests that gate or direct behavior-parity checks leave material uncertainty.
 - Use `exhaustive-code-slimmer` when the user wants a fresh deletion-first slimming pass instead of a response to an existing thermo report.
 
-## Non-Negotiables
+## Scope and Authorization
 
-- Build a disposition ledger before editing code.
-- Verify harsh review language against current code, current diff, line counts, call sites, ownership boundaries, canonical helpers, tests, configs, and project constraints.
-- Prefer the narrowest behavior-preserving simplification that resolves the structural risk.
-- Resolve size-pressure findings by reducing the file's responsibility span or dependency burden. Do not accept a lower line count as sufficient evidence.
-- Treat a cohesive extraction that stays inside both the current package and architectural layer as scoped cleanup when behavior and public contracts stay unchanged. Pause before crossing either boundary, changing a public API/type/state model, replacing a framework, reshaping the project layout, or collapsing a large abstraction unless the user has approved that scope.
-- Preserve Git staging. Do not run `git add`, `git add -A`, `git add -p`, `git add -N`, `git commit`, `git commit --amend`, or index-mutating equivalents unless the current request explicitly asks for staging, committing, or PR publication.
-- If staged changes already exist, preserve them exactly. Keep new fixes unstaged.
+- Resolve the source, selected items, and requested outcome from the whole current conversation. A feedback assessment or review-only request ends with dispositions; implement only when the user has authorized fixes.
+- When review and repair are already requested together, continue after the source report is complete. A phase change or a pre-edit plan does not require the user to repeat that authorization.
+- Keep the source artifact unchanged. Record current evidence and dispositions in a concise final ledger or a separate resolution report; a report's recommendation is not permission to edit.
+- Preserve unrelated work and pre-existing staged contents. Leave fixes unstaged unless the user has already authorized the specific staging, commit, or publication action for this task; repair permission alone does not include those actions.
+- Do not stage to make a follow-up review easier. Verify working-tree fixes against the recorded baseline and disclose that the staged snapshot may still contain the original issue. Avoid tools with unrequested staging side effects; if the index is accidentally changed, restore only the known workflow delta without disturbing user work and disclose it.
 
-## Intake Workflow
+## Workflow
 
-1. Read the full report, including `Scope`, `Review Snapshot`, `Complete Findings Index`, severity sections, `Questions`, `Decomposition Gaps`, recursive ledgers, line-count ledgers, sweep logs, blind spots, evidence, and self-checks.
-2. Confirm the report still applies to the current checkout, branch, diff, baseline, and user-requested scope.
-3. Stop and regenerate or clarify before editing when scope, baseline, completion status, line counts, or item enumeration is stale or inconsistent.
-4. Build the disposition ledger:
-   - every `F#` in `Complete Findings Index`
-   - every finding card in `Blocker`, `Major`, `Minor`, and `Questions`
-   - every standalone `D#` in `Decomposition Gaps`
-   - every recursive coverage row marked `Finding F#`, `Not covered`, unknown, or ambiguous
-   - every line-count row marked `crossed 350`, `already over 350`, `Finding F#`, `not covered`, or `waived with reason`, including any boundary diagnosis or its absence
-   - every candidate sweep row marked `Finding F#`, `merged into F#`, `not covered`, or ambiguous
-   - any mismatch between indexes, cards, ledgers, sweep logs, line counts, and self-checks
-5. Restate each item as a concrete structural risk: maintainability, future-change cost, ownership drift, type-contract muddiness, oversized-file pressure, duplicated concept, or unnecessary reasoning load.
-6. Verify each item before deciding its disposition: fix, disprove, narrow, downgrade, justify waiver, answer question, close gap, keep open, or ask for clarification.
+1. Read the complete available report, governing requirements, and current scope. For PR comments or unstructured feedback, normalize the material claims into stable IDs and record the actual source; missing template sections alone do not require a new review.
+2. Build a disposition ledger before code edits. Include these source items:
+   - every `F#` in the findings index or severity cards and every standalone `D#` decomposition gap
+   - recursive coverage, candidate-sweep, and line-count rows linked to findings, unknown impact, missing coverage, threshold crossings, or waivers
+   - mismatches between the source index, cards, scope, line counts, and ledgers
+3. Reconcile scope and evidence per item. Mark already-fixed, disproved, stale, out-of-scope, or unmappable claims explicitly. Reconstruct affected evidence locally where possible; regenerate only the affected scope when the source cannot support reliable item matching. An unclear target or contract blocks dependent edits, while independent confirmed work may continue. Keep unresolved coverage and integrity gaps visible; do not claim the whole gate is clear.
+4. Verify each claim against its current behavior path and governing product or architecture intent. Reuse source traces only after checking that relevant code, inputs, contracts, and scope still match and that the evidence supports the claim; reconstruct changed, missing, or disputed portions. Current code and tests are behavioral evidence, not product authority by themselves. Lint, typecheck, and unrelated green tests do not prove a claim false.
+5. Present a concise plan naming accepted items, affected files or boundaries, expected behavior, risks, and verification. Continue within existing authorization. Resolve technical risk through evidence, focused checks, or a narrower fix; ask only when an unresolved user decision or additional authority is needed, and pause only dependent work.
+6. Apply the smallest cohesive changes for proven in-scope issues, preserving approved behavior and bounded exceptions. Prioritize blockers; an unresolved independent item does not prevent other confirmed fixes, but it still affects the final gate.
+7. Verify affected behavior and repository-required checks, then update each disposition. A check may cover several related items. Reuse recorded results only when they apply to the final code and inputs, and identify their source; never describe reuse as a new run. Repeat or broaden checks only for new edits, failures, unresolved concerns, or required gates.
+
+For threshold items, map responsibilities, canonical owners, dependency direction, and the proposed seam before choosing a remedy. Preserve package/layer and public-contract boundaries unless their change is already authorized.
 
 ## Regression Guard
 
@@ -68,20 +61,6 @@ For each `User-visible`, `User-visible dependency`, or `Unknown impact` surface,
 Record each surface as `Preserved`, `Intentional change`, `Potential regression`, or `Not covered`.
 
 Do not hide behavior risk behind passing typecheck, lint, or unrelated tests. If behavior parity is uncertain, either run targeted verification, narrow the structural fix, invoke `regression-review`, or carry the uncertainty forward explicitly.
-
-## Pre-Edit Plan
-
-Before changing code, tell the user:
-
-- which ledger items will be fixed, disproven, narrowed, waived, or carried forward
-- the exact files/modules likely to change
-- why the fix is behavior-preserving or which visible changes are intentional
-- which behavior-parity surfaces need verification
-- for each threshold item, the current responsibility map, proposed owner or seam, and before/after dependency direction
-- whether each proposed split is contract-preserving local cleanup or an approval-gated boundary change
-- which line counts or structural ledgers will be recomputed
-- which tests, runtime checks, output inspections, or static traces will be run
-- that Git staging will remain untouched unless staging or publishing was requested
 
 ## Item Handling
 
@@ -143,7 +122,7 @@ Treat the 350-line threshold as a structural signal, not a mechanical ban.
 - Reject dense formatting, compressed control flow, shortened names, removal of useful documentation or types, line-range extractions, thin forwarding modules, and moves into catch-all `utils`, `helpers`, or `common` files. None of these closes a threshold item.
 - For `crossed 350`, implement the smallest cohesive, behavior-preserving separation available within scope or document a defensible cohesive-file waiver. Crossing back below the number is supporting evidence, not the acceptance criterion.
 - For `already over 350`, avoid adding another responsibility; place new behavior with its rightful owner or narrow an existing responsibility when the approved scope permits it. If a cohesive file still grows, refresh its waiver against the added behavior.
-- Perform an extraction without additional approval only when it remains inside both the current package and architectural layer and keeps public contracts and dependency direction stable. Carry forward work that crosses either boundary with its proposed scope, risk, and verification plan when approval is still needed.
+- Treat a contract-preserving extraction inside the current package and architectural layer as scoped cleanup. For a move across either boundary, follow any already-approved scope; otherwise carry it forward with the proposed scope, risk, and verification plan until authorized.
 - Exclude generated files, lockfiles, vendored artifacts, snapshots, fixtures, and intentionally monolithic external formats unless manually maintained source.
 
 ## Push Back When
@@ -159,20 +138,13 @@ Treat the 350-line threshold as a structural signal, not a mechanical ban.
 
 Push back with evidence: code path, line count, owner, canonical helper, behavior trace, command output, test, fixture, or doc.
 
-## Implementation Order
+## Completion and Follow-Up
 
-1. Clarify stale or unclear scope.
-2. Build the disposition ledger and behavior-parity ledger.
-3. Resolve report inconsistencies and stale line counts.
-4. For every threshold item, map responsibilities and dependency seams and classify the remedy as local or approval-gated.
-5. Present the pre-edit plan.
-6. Fix or disprove unresolved `Blocker` items.
-7. Resolve `Major` items with focused fixes, proof, waiver, or carry-forward decisions.
-8. Decide `Minor` and `Question` items.
-9. Close or carry forward standalone `D#` gaps and open coverage rows.
-10. Recompute affected line counts.
-11. Run targeted structural and behavior verification for every touched surface.
-12. Refresh the thermo gate or update the reviewer with concrete evidence when structure, coverage, line counts, or decomposition materially changed.
+Finish with the source identity, per-item dispositions, focused changes, verification, remaining risks, and actual Git state. Do not claim resolution while a source item lacks a disposition or an implemented item lacks appropriate evidence. Separate a resolved subset from an unresolved overall gate.
+
+Use at most one post-fix review in this resolution when the user requested it or independent review would materially improve confidence. Limit it to the implementation delta and affected boundaries, carrying forward settled intent and disproved claims unless relevant code, contracts, or evidence changed. Return its remaining findings; do not automatically start another receiving cycle. A changed line count, new artifact, or phase handoff alone does not require another full review.
+
+Before final verification, correct failures caused by the current patch when evidence supports an in-scope repair. Report materially distinct discoveries outside the accepted item set without silently expanding the task.
 
 ## Final Ledger
 
@@ -189,25 +161,3 @@ Use this shape when multiple items were consumed:
 ```
 
 Mention changed files are left unstaged unless the user asked otherwise.
-
-## Response Style
-
-Use short technical acknowledgments:
-
-- `F1 still applies. The new branch duplicates the existing policy path, so I am deleting the wrapper and reusing the canonical helper.`
-- `F2 is narrower than reported. The file remains over 350 lines, but this diff returns formatting policy to its canonical owner and leaves the route with one fewer reason to change.`
-- `D1 requires a cross-package boundary move. I am carrying it forward instead of starting an unapproved architecture refactor.`
-- `The state-machine candidate was Not covered; local fixtures do not exercise it, so I am leaving a concrete verification step.`
-- `The planned extraction touches checkout output formatting, so I am adding it to the behavior-parity ledger before editing.`
-
-## Common Mistakes
-
-- Processing only `Must-review now` and ignoring the complete findings index.
-- Treating `D#`, line-count rows, sweep rows, or open coverage rows as background.
-- Starting broad architecture refactors without approved scope.
-- Treating a denser layout, compressed control flow, or a lower count as proof that structural pressure is gone.
-- Moving code into an arbitrary dumping ground or thin forwarding layer instead of extracting a coherent responsibility.
-- Dismissing structural findings only because tests pass.
-- Ignoring source, guard, output, or extension-point parity during structural cleanup.
-- Staging fixes without an explicit current staging, commit, or PR request.
-- Claiming the thermo gate is resolved without accounting for every structural item and every behavior-parity risk.

@@ -296,8 +296,11 @@ def main() -> int:
     assessment = field(text, "Assessment subagent")
     if not assessment:
         errors.append("Assessment subagent status is required")
+    elif assessment.startswith("Coordinator assessment - "):
+        if is_placeholder(assessment.removeprefix("Coordinator assessment - ")):
+            errors.append("Coordinator assessment requires a concrete rationale")
     elif not (assessment.startswith("V0 launched") or assessment.startswith("Subagent unavailable")):
-        errors.append("Assessment subagent must record V0 launched or the unavailable fallback")
+        errors.append("Assessment subagent must record coordinator assessment, V0 launched, or the unavailable fallback")
     orchestration = field(text, "Orchestration decision")
     if orchestration not in {"Single verifier", "Parallel specialists"}:
         errors.append("Orchestration decision must be Single verifier or Parallel specialists")
@@ -333,8 +336,8 @@ def main() -> int:
 
     parent_text: str | None = None
     if source_generation == 0:
-        if continuation_authority != "Initial receiving handoff":
-            errors.append("generation 0 source must use Initial receiving handoff authority")
+        if continuation_authority not in {"Initial receiving handoff", "Explicit current user instruction"}:
+            errors.append("generation 0 source requires an authorized initial handoff or explicit user instruction")
         if source_parent_id != "None" or source_parent_path != "None":
             errors.append("generation 0 source must not have a parent resolution")
         if args.parent_resolution:
@@ -738,11 +741,23 @@ def main() -> int:
     if actionable:
         if coding_stage != "Required":
             errors.append("Coding stage must be Required when actionable items exist")
-        if not coding_subagent or not (
+        coordinator_implementation = bool(
+            coding_subagent and coding_subagent.startswith("Coordinator implementation - ")
+        )
+        if coordinator_implementation:
+            if is_placeholder(coding_subagent.removeprefix("Coordinator implementation - ")):
+                errors.append("Coordinator implementation requires a concrete rationale")
+            if coding_mode != "Coordinator":
+                errors.append("Coordinator implementation requires Coding mode Coordinator")
+            if any(agents != {"Coordinator"} for agents in assignment_agents.values()):
+                errors.append("Coordinator implementation requires Coordinator ownership in Coding Assignments")
+        elif not coding_subagent or not (
             coding_subagent.startswith("D1 launched") or coding_subagent.startswith("Subagent unavailable")
         ):
-            errors.append("actionable items require D1 launched or the unavailable fallback")
-        if coding_mode not in {"Single coding agent", "Multiple disjoint agents"}:
+            errors.append("actionable items require coordinator implementation, D1 launched, or the unavailable fallback")
+        if coding_mode == "Coordinator" and not coordinator_implementation:
+            errors.append("Coding mode Coordinator requires a coordinator implementation status")
+        if coding_mode not in {"Coordinator", "Single coding agent", "Multiple disjoint agents"}:
             errors.append("actionable items require a concrete Coding mode")
     else:
         if not coding_stage or not coding_stage.startswith("Not required"):

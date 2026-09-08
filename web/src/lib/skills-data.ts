@@ -63,7 +63,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A deletion-first workflow for reducing maintained code while preserving externally observable behavior.",
     overview:
-      "Use this skill when a codebase needs aggressive but disciplined simplification. It builds a behavior-preservation oracle, audits removable code, tests deletion and simplification candidates, and pauses for explicit approval before architecture-level refactors so code slimming improves developer experience instead of creating dense or risky code. Invocation is explicit-only: a user must invoke `$exhaustive-code-slimmer`; matching prompts do not activate it automatically.",
+      "Use this skill when a codebase needs aggressive but disciplined simplification. It builds a behavior-preservation oracle, audits removable code, and exhaustively tests deletion and simplification candidates. Audit-only requests stop at recommendations; implementation follows already-approved scope, with concrete options for unresolved architecture decisions. Invocation is explicit-only: a user must invoke `$exhaustive-code-slimmer`; matching prompts do not activate it automatically.",
     bestFor: [
       "Finding removable files, branches, exports, dependencies, wrappers, and duplicate logic.",
       "Running code-reduction candidates against build, typecheck, test, lint, smoke, or contract oracles.",
@@ -79,12 +79,12 @@ export const SKILLS: SkillDetail[] = [
     outputs: [
       "Before and after metrics, accepted candidates, rejected high-risk candidates, and shrink ratio.",
       "Oracle commands and residual blind spots for the final code-reduction result.",
-      "Approval-gated architecture options when structural cleanup is needed before safe slimming.",
+      "Concrete architecture options when safe slimming requires an unresolved design or scope decision.",
     ],
     guardrails: [
       "Do not count minification, obfuscation, whitespace-only deletion, or comment deletion as code slimming.",
       "Do not delete public APIs, migrations, compatibility shims, security checks, operational logging, or config without evidence.",
-      "Do not perform architecture-level refactors until the user explicitly approves one option or scope.",
+      "Keep architecture changes within approved scope; existing approval carries through candidate review and verification.",
     ],
     entryPoints: [
       {
@@ -122,7 +122,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A reuse-first workflow for discovering existing assets, deciding whether to adopt or consolidate, and documenting justified divergence.",
     overview:
-      "Use this skill when teams are duplicating code, libraries, services, templates, docs, platform workflows, or architecture decisions. It combines search-before-building habits, duplicate classification, build-vs-reuse scoring, migration planning, and lightweight catalog scripts so reuse decisions are evidence-backed instead of abstract mandates.",
+      "Use this skill when teams are duplicating code, libraries, services, templates, docs, platform workflows, or architecture decisions. It combines discovery, duplicate classification, build-vs-reuse scoring, migration planning, and catalog scripts. Audit and planning requests return evidence and recommendations; consolidation, catalogs, and ongoing governance follow the requested delivery scope.",
     bestFor: [
       "Auditing duplicated implementations, overlapping services, repeated templates, or abandoned forks.",
       "Deciding whether to adopt, adapt, wrap, extract, consolidate, sunset, or justify divergence.",
@@ -133,7 +133,7 @@ export const SKILLS: SkillDetail[] = [
       "Search local code, docs, manifests, design systems, service catalogs, ADRs, tickets, and conventions before proposing new work.",
       "Classify duplicate candidates by exact copy, near clone, shared business rule, overlapping service, template duplication, abandoned fork, or justified divergence.",
       "Score reuse against fitness, ownership, maintenance, security, compatibility, migration cost, and future evolution.",
-      "Recommend an intervention and make the reusable path obvious with examples, owners, lifecycle, feedback channels, and metrics.",
+      "Recommend an intervention; add shared assets, catalog guidance, and ongoing metrics only when that delivery work is in scope.",
     ],
     outputs: [
       "Evidence with file paths, symbols, package or service names, docs, search terms, owners, consumers, and confidence.",
@@ -451,7 +451,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A disciplined staging workflow for turning broad local changes into a short series of reviewable commits.",
     overview:
-      "Use this skill when unrelated concerns, refactors, behavior changes, generated files, or separable hunks are mixed together. It plans logical batches, stages one batch at a time, asks `git-commit` for the message, and waits for explicit approval before committing.",
+      "Use this skill when unrelated concerns, refactors, behavior changes, generated files, or separable hunks are mixed together. It plans logical batches, stages one batch at a time, and asks `git-commit` for the message. User authorization may cover an individual batch or the whole sequence; request confirmation for a prepared batch only when needed, and honor any requested per-batch confirmation.",
     bestFor: [
       "Separating unrelated concerns in one working tree.",
       "Keeping refactors apart from behavior changes.",
@@ -462,12 +462,12 @@ export const SKILLS: SkillDetail[] = [
       "Decide whether the changes need splitting and write a short commit plan.",
       "Respect any existing index content before changing staged files.",
       "Stage one logical batch at a time, including only the files and hunks that belong together.",
-      "Invoke `git-commit` for the staged batch and ask for confirmation before running each commit.",
+      "Invoke `git-commit`, present the staged summary and message, then commit when covered by existing authorization or ask for that prepared batch's approval.",
     ],
     outputs: [
       "A proposed sequence of focused commits.",
       "One staged batch at a time with a matching Conventional Commit draft.",
-      "Local commits only after explicit user approval.",
+      "Local commits within explicit user authorization for the batch or sequence.",
     ],
     guardrails: [
       "Do not push as part of the split workflow.",
@@ -663,36 +663,36 @@ export const SKILLS: SkillDetail[] = [
     slug: "plan-mode",
     title: "plan-mode",
     category: "Planning",
-    blurb: "Create Cursor-style editable plan files before building.",
+    blurb: "Create editable Markdown implementation plans.",
     lead:
-      "A Cursor-style planning workflow that creates an editable Markdown plan file with code references and todos, then builds only after approval.",
+      "A planning workflow with editable Markdown plans, code references, todos, and an explicit planning or implementation scope.",
     overview:
-      "Use this skill when work is complex, ambiguous, risky, or broad enough that premature edits would create churn or damage user intent. It mirrors Cursor's Plan Mode loop: create or update a disk-backed editable plan file, research the codebase into file and code references, ask focused clarification questions, maintain buildable todos, invoke `grill-me` for non-trivial pressure-testing, validate the plan artifact, and build only from the approved plan.",
+      "Use this skill when the user requests planning, a saved plan file, or architecture and tradeoff analysis. It creates an editable Markdown plan, researches concrete code references, resolves material questions, and maintains buildable todos. Planning-only requests stop before implementation; plan-and-build requests continue within existing authorization. Complexity or multiple files alone do not introduce an approval gate. Use `grill-me` for a requested interview or unresolved user decisions that benefit from one.",
     bestFor: [
       "Planning multi-file implementation, architecture, routing, data-flow, or tradeoff-heavy work.",
       "Maintaining a live Markdown plan document with file references, code references, and checkbox todos.",
-      "Invoking `grill-me` to pressure-test meaningful assumptions, risks, failure modes, and rollout or rollback edges.",
+      "Invoking `grill-me` for an interview or material unresolved user decisions.",
       "Holding a strict boundary around dirty worktrees, migrations, settings, deployment, generated code, or other high-blast-radius surfaces.",
-      "Building all or selected todos only after the user approves the plan.",
+      "Building all or selected todos within existing authorization, or delivering a planning-only result.",
     ],
     workflow: [
-      "Create or reuse the Markdown plan file immediately and cite its path.",
+      "Resolve whether the request is planning-only or also authorizes implementation, then create or reuse the Markdown plan file and cite its path.",
       "Research only what is needed, then update the plan with concrete file paths, code references, constraints, and open questions.",
       "Ask clarifying questions when decisions would change the plan, and update the file after each answer.",
       "Maintain editable checkbox todos that can be selected and built from later.",
-      "Invoke `grill-me` before approval when the plan has meaningful assumptions, tradeoffs, failure modes, or scope edges.",
-      "Validate the plan artifact, summarize it in chat, and wait for approval before building from all or selected todos.",
+      "Pressure-test assumptions with evidence; invoke `grill-me` when an interview is requested or material user decisions remain unresolved.",
+      "Validate and summarize the plan, then deliver the planning-only result or execute the authorized todos with relevant checks and required repository gates.",
     ],
     outputs: [
-      "A concrete approval-gated Markdown plan file with file/code references and editable todos.",
+      "A concrete Markdown plan with code references, editable todos, and an accurate authorization state.",
       "`grill-me` transcript and planning-ready outcome paths when a pressure-test was needed.",
       "Focused clarification questions when ambiguity would change the plan.",
-      "A clean build-from-plan handoff after approval, including promised validation steps.",
+      "A build-from-plan handoff or authorized implementation with proportionate validation.",
     ],
     guardrails: [
-      "Do not edit implementation files, stage commits, install packages, start services, or run write-oriented scripts while planning; plan files and `grill-me` logs/outcomes are the only allowed writes.",
+      "During planning-only work, plan files and `grill-me` logs/outcomes are the only allowed writes; do not edit implementation, install packages, start services, or mutate Git state.",
       "Do not hide unresolved product, data, safety, or architecture assumptions inside the final plan.",
-      "Do not build without rereading the plan file and confirming whether approval covers all todos or only selected todos.",
+      "Do not build without rereading the plan and resolving authorization for all or selected todos; do not request approval again for already authorized work.",
     ],
     entryPoints: [
       {
@@ -743,7 +743,7 @@ export const SKILLS: SkillDetail[] = [
       "When a native debugger is attached and pausing is safe, install every safe nonredundant initial breakpoint before the first run or continue, issuing single-location calls back-to-back; after a pause, add the entire newly justified causal-interval batch before resuming. Use non-pausing probes when suspension is unsafe.",
       "Read the investigation ledger and resume its exact active ready file before any start attempt; reuse a healthy collector and dashboard across turns and run IDs without workspace scanning or UI reopening, and replace it only when missing or unreachable or when the user or host explicitly requires isolation or replacement.",
       "Instrument shared causal cuts and invariants, select a project logger or runtime-native adapter, resolve every temporary helper reference independently with the target project's module system (optionally using the path helper for slash-delimited file-relative references), and pass native resolution, compile, collector, expected-probe, and cardinality gates; then after prior frozen analysis and next-run preparation run `resume-recording`, require collector recording to be live, and copy the normalized `dashboard-status` line before every user-owned reproduction.",
-      "Collect one clean terminal run or bounded observation window, detach its producers, flush the selected logger or runtime adapter, reconcile accepted writes with persisted NDJSON, freeze the collector, and summarize evidence by run and relevant application correlation fields while recording remains frozen.",
+      "Collect one clean terminal run or bounded observation window. Interpret the user's reply in context to recognize a completed handoff without requiring a fixed phrase, then detach producers, flush the selected logger or runtime adapter, reconcile accepted writes with persisted NDJSON, freeze the collector, and summarize evidence by run and relevant application correlation fields while recording remains frozen.",
       "Prove origin-to-symptom propagation or add only probes for the smallest unresolved causal interval, updating one evolving investigation ledger throughout.",
       "For diagnosis-only work, preserve evidence and clean temporary instrumentation before reporting; otherwise treat diagnosis as intermediate, repair the proven mechanism immediately, verify separately, and then clean owned artifacts.",
     ],
@@ -766,7 +766,7 @@ export const SKILLS: SkillDetail[] = [
       "Do not treat user-owned reproduction, missing agent browser control, or a ban on agent-operated product browsing as a headless reason to disable local dashboard auto-open.",
       "Do not add a correlation header when it could change CORS, cache, routing, signing, authorization, or product behavior.",
       "Do not treat dashboard visibility as evidence or let a failed open block evidence collection or reproduction.",
-      "Do not invent a DevTools or page-global helper as a user completion action; attach checkpoint instrumentation to the natural boundary, use an existing host action or `done`, and prove completeness from acknowledgements and persisted records.",
+      "Do not invent a DevTools or page-global helper as a user completion action; attach checkpoint instrumentation to the natural boundary and use an existing host action or a natural-language report. Evaluate the whole reply's intent rather than matching keywords, and verify the checkpoint, acknowledgements, and persisted records independently of user-reported completion.",
       "Do not treat collector-global `FROZEN` as health failure, evidence completion, or a persistence checkpoint, and never Freeze before producers are detached and the selected adapter is flushed; keep recording frozen through analysis and repair, then Resume only after the next run is prepared and immediately before recording.",
       "Do not apply a repair when the request is diagnosis-only or retain a smaller workaround that leaves the causal mechanism active.",
       "Do not sample, throttle, debounce, first-N, change-gate, once-per-key, aggregate, merge, coalesce, overwrite, deduplicate, or discard any active probe occurrence.",
@@ -900,7 +900,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A two-phase local-diff reviewer with durable Markdown reports and low-friction, report-scoped repair.",
     overview:
-      "Use this skill for a narrow Bugbot workflow over local branch or uncommitted changes. Detection inventories tracked and untracked files, recursively follows diff-derived candidates until a bounded fixed point, and persists every distinct verified production bug in a unique Markdown report; that report artifact is its only detection-time write. After seeing the report, Bugbot infers repair intent from the full conversation rather than matching fixed confirmation phrases. Clear repair intent with no narrower scope selects all unresolved findings in the latest unambiguous report, while semantic references can identify a subset. Bugbot verifies scoped repairs without silently fixing new findings or mutating Git publication state.",
+      "Use this skill for a narrow Bugbot workflow over local branch or uncommitted changes. Detection inventories tracked and untracked files, recursively follows diff-derived candidates until a bounded fixed point, and persists every verified production bug in a unique Markdown report; that report is its only detection-time write. Repair intent is resolved from the full conversation, including an initial request to review and fix. After persistence, continue authorized repairs without another approval round; review-only requests stop at the report. Clear repair intent with no narrower scope selects all unresolved findings in the latest unambiguous report, while semantic references can select a subset. Run targeted and required checks without silently fixing distinct new findings or mutating Git publication state.",
     bestFor: [
       "Reviewing current branch work against the repository default branch or a named base.",
       "Reviewing staged, unstaged, and untracked local changes against HEAD.",
@@ -912,7 +912,7 @@ export const SKILLS: SkillDetail[] = [
       "Trace each candidate only through causally relevant control flow, dependencies, contracts, state, and failure paths.",
       "Add newly exposed diff-connected risks until the frontier reaches a fixed point, then verify and de-duplicate by root cause.",
       "Write every distinct verified finding to a unique Markdown report with stable report-local IDs, evidence, coverage, and a recommendation.",
-      "When conversation context establishes report-repair intent, reverify the inferred finding scope, apply scoped repairs, and run proportionate checks.",
+      "After report persistence, apply existing repair authorization from the initial request or later conversation, reverify the selected findings, and run targeted plus required checks without unnecessary repetition.",
     ],
     outputs: [
       "A durable Markdown report with one card per introduced production bug plus a complete findings index.",
@@ -922,7 +922,7 @@ export const SKILLS: SkillDetail[] = [
     guardrails: [
       "During detection, write only the report artifact; do not edit reviewed source files or Git state.",
       "Start fresh detection for Bugbot requests; implicit routing exists for report follow-ups, not generic code review.",
-      "Infer report-repair intent semantically rather than matching phrases; ask only when intent, source report, or scope is genuinely unclear.",
+      "Resolve repair intent from current and prior user instructions, preserve review-only scope, and ask only when intent, report, or finding scope remains materially unclear.",
       "Do not cap findings or stop after the highest-severity or easiest bugs.",
       "Do not widen the recursive frontier beyond paths causally connected to the reviewed change.",
       "Do not stage, commit, push, deploy, or repair distinct new findings without separate authorization.",
@@ -958,7 +958,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A frozen-scope deep review workflow with authoritative expected-behavior evidence, stable issue fingerprints, and a terminal post-implementation generation.",
     overview:
-      "Use this skill for `/code-review`, PR or diff review, branch or staged-change review, and merge-safety assessment. It begins with one read-only orchestration assessor, freezes the initial scope, traces propagated risk, requires authoritative product or contract evidence before classifying a product choice as a defect, and assigns deterministic semantic issue fingerprints. A receiving workflow may create one generation-1 review limited to the implementation delta and affected execution chains; that report is terminal and cannot automatically start another receiving cycle. Invocation is explicit-only: a user must invoke `$code-review`; matching prompts do not activate it automatically.",
+      "Use this skill for `/code-review`, PR or diff review, branch or staged-change review, and merge-safety assessment. It assesses orchestration in the coordinator, delegates when independent analysis or parallel coverage adds material value, freezes the initial scope, traces propagated risk, requires authoritative product or contract evidence before classifying a product choice as a defect, and assigns deterministic semantic issue fingerprints. A receiving workflow may create one generation-1 review limited to the implementation delta and affected execution chains; that report is terminal and cannot automatically start another receiving cycle. Invocation is explicit-only: a user must invoke `$code-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Reviewing PRs, branch diffs, staged changes, working trees, focused files, or pasted code.",
       "Deciding when parallel specialist subagents add material review value.",
@@ -968,7 +968,7 @@ export const SKILLS: SkillDetail[] = [
     ],
     workflow: [
       "Resolve review-chain generation, freeze scope, and capture baseline, target, requirements, and a minimal diff inventory.",
-      "Launch the read-only orchestration-assessment subagent and follow its single-reviewer or specialist plan.",
+      "Assess scope and risk in the coordinator or a justified read-only assessor, then execute the single-reviewer or specialist plan.",
       "Trace changed control, data, security, persistence, integration, and test paths beyond the diff when risk can propagate.",
       "Ground expected behavior, independently verify and de-duplicate candidates, then assign stable IDs, issue keys, and fingerprints.",
       "Write a canonical `code-review` Markdown report from the template, then validate it with `scripts/validate_review_report.py`.",
@@ -979,7 +979,7 @@ export const SKILLS: SkillDetail[] = [
       "A complete findings index, test gaps, coverage ledger, issue lineage, and bounded receiving handoff.",
     ],
     guardrails: [
-      "Do not make code changes during review unless the user explicitly asks for fixes.",
+      "Keep review read-only; finish the report before continuing fixes already authorized by the user.",
       "Do not stage, commit, push, or mutate Git state.",
       "Do not equate review depth with agent count; launch specialists only when justified by scope and risk.",
       "Do not copy subagent conclusions into the report without independent coordinator synthesis.",
@@ -1028,7 +1028,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "An extremely strict code-quality gate for structural simplification, file-size pressure, abstraction boundaries, and spaghetti growth.",
     overview:
-      "Use this skill when a change needs a thermonuclear maintainability review rather than a general correctness review. It reviews the relevant scope, writes a Markdown report, uses 350 lines as a maintained-source trigger for cohesion, dependency, and ownership analysis, recursively sweeps structural candidates until coverage reaches a fixed point or is marked incomplete, and avoids code changes unless explicitly asked for fixes. The trigger calls for boundary diagnosis, not text compaction. Invocation is explicit-only: a user must invoke `$thermo-review`; matching prompts do not activate it automatically.",
+      "Use this skill for strict maintainability review. It writes a Markdown report, uses 350 lines as a trigger for cohesion, dependency, and ownership analysis, and sweeps structural candidates until coverage reaches a fixed point or is marked incomplete. The trigger calls for boundary diagnosis. Review-only requests end at the report; already-authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$thermo-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Reviewing whether a diff makes the implementation more tangled, oversized, indirect, or hard to extend.",
       "Finding missed code-judo simplifications, cohesive responsibility splits, canonical-ownership moves, and clearer type boundaries.",
@@ -1040,7 +1040,7 @@ export const SKILLS: SkillDetail[] = [
       "Seed a recursive candidate frontier from file growth, branches, helpers, abstractions, types, ownership boundaries, orchestration, tests, and duplicated blocks.",
       "Trace each candidate inward and outward through local flow, call sites, contracts, tests, and canonical helpers.",
       "Append newly discovered simplification candidates until the frontier reaches a fixed point or uncovered areas are explicitly marked.",
-      "Write a Markdown report with recommendation, findings, decomposition gaps, recursive coverage ledger, and evidence appendix.",
+      "Preserve a Markdown report with findings, decomposition gaps, coverage, and evidence, then follow the requested review-only or repair outcome.",
     ],
     outputs: [
       "A Markdown thermo-nuclear code-quality report.",
@@ -1048,7 +1048,7 @@ export const SKILLS: SkillDetail[] = [
       "A recursive coverage ledger, line-count ledger, candidate sweep log, and quality-gate recommendation.",
     ],
     guardrails: [
-      "Do not make code changes during review unless the user explicitly asks for fixes.",
+      "Keep the review phase read-only; a completed report permits repairs only within existing user authorization.",
       "Do not treat passing tests as proof that the implementation is structurally sound.",
       "Do not silently waive a 350-line structural candidate; account for the boundary or mark the area uncovered.",
       "Do not accept dense formatting, arbitrary relocation, or another count-only tactic as a threshold remedy.",
@@ -1080,20 +1080,20 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A response workflow for consuming thermo reports without blindly turning harsh feedback into broad refactors or behavior regressions.",
     overview:
-      "Use this skill after a thermo report or equivalent structural review feedback. It builds a disposition ledger for every finding, decomposition gap, recursive coverage row, line-count threshold item, candidate sweep entry, and blind spot before changing code, adds a behavior-parity ledger for touched user-visible or unknown-impact surfaces, and resolves oversized maintained source through cohesive boundaries rather than count-only edits. It fixes only verified structural issues while preserving Git staging and avoiding unapproved cross-boundary refactors. Invocation is explicit-only: a user must invoke `$receiving-thermo-review`; matching prompts do not activate it automatically.",
+      "Use this skill to resolve thermo reports or structural feedback. It accounts for findings, decomposition, coverage, and line-count evidence, checks behavior parity, and verifies cohesive ownership before fixing a threshold concern. It reconciles stale items individually, continues authorized independent fixes, and preserves the source report and unrelated Git state. Follow-up review is bounded to affected changes when justified. Invocation is explicit-only: a user must invoke `$receiving-thermo-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Verifying harsh structural findings against the current diff, line counts, call sites, and ownership boundaries.",
       "Resolving 350-line concerns through responsibility ownership and dependency seams, alongside decomposition, recursive coverage, and candidate sweep items.",
       "Applying scoped behavior-preserving simplifications while checking source, guard, output, and extension-point parity.",
     ],
     workflow: [
-      "Read the full report and confirm scope, baseline, completion status, and current checkout still match.",
+      "Read the available report, requested outcome, approved scope, baseline, and current checkout.",
       "Create a disposition ledger from findings, decomposition gaps, recursive coverage rows, line-count rows, sweep rows, and blind spots.",
-      "Resolve report inconsistencies or stale line counts before editing.",
-      "Map responsibilities and dependency seams for threshold items, then classify each remedy as contract-preserving local cleanup or an approval-gated boundary change.",
-      "Present a structural change plan with behavior-parity, ownership, verification, and no-staging notes before changing code.",
-      "Fix or disprove Blocker and Major items first, then decide Minor, Question, decomposition, and coverage items.",
-      "Recompute affected line counts and run targeted verification for every touched surface.",
+      "Reconcile stale or inconsistent evidence per item, blocking only dependent edits and retaining open coverage gaps.",
+      "Map responsibilities and dependencies for threshold items, then select a cohesive remedy within approved boundaries.",
+      "Present a concise behavior-parity and verification plan, then continue already-authorized work.",
+      "Prioritize proven blockers while resolving independent items and recording justified waivers or carry-forward decisions.",
+      "Recompute affected line counts and run focused plus required checks; report remaining findings without recursive review cycles.",
     ],
     outputs: [
       "A full disposition ledger for every consumed thermo report item.",
@@ -1105,7 +1105,7 @@ export const SKILLS: SkillDetail[] = [
       "Do not start broad architecture refactors without approved scope.",
       "Do not treat a lower count, dense formatting, or a move into a catch-all module as resolution of a 350-line finding.",
       "Do not hide potential user-visible regressions behind structural cleanup.",
-      "Do not stage changes unless the current request explicitly asks for staging, committing, or PR publication.",
+      "Preserve existing staged contents; perform Git actions only within the user's specific authorization for this task.",
       "Do not claim the thermo gate is resolved until every finding, decomposition gap, threshold item, and open coverage row is accounted for.",
     ],
     entryPoints: [
@@ -1129,19 +1129,19 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "An execution-chain-first response workflow that preserves settled intent, enforces compatible dispositions, and bounds post-implementation review.",
     overview:
-      "Use this skill after a `code-review` report or equivalent PR feedback. Before assigning dispositions, it reconstructs each problem from its real trigger and entry through guards, control/data/state propagation, persistence and external effects, failure semantics, and terminal impact. It preserves matching Intentional, Disproved, Stale, and Duplicate decisions across generations, blocks fixes when chain or product-authority evidence is incomplete, delegates only compatible confirmed actions, returns distinct adjacent discoveries as provisional residuals, and allows at most one terminal post-implementation review without automatically consuming its findings. Invocation is explicit-only: a user must invoke `$receiving-code-review`; matching prompts do not activate it automatically.",
+      "Use this skill after a `code-review` report or equivalent PR feedback. Before assigning dispositions, it reconstructs each problem from its real trigger and entry through guards, control/data/state propagation, persistence and external effects, failure semantics, and terminal impact. It preserves matching Intentional, Disproved, Stale, and Duplicate decisions across generations, blocks fixes when chain or product-authority evidence is incomplete, implements only compatible confirmed actions in the coordinator or through justified delegation, reuses evidence only after checking that it still applies, returns distinct adjacent discoveries as provisional residuals, and allows at most one terminal post-implementation review without automatically consuming its findings. Invocation is explicit-only: a user must invoke `$receiving-code-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Re-verifying every `F#`, `T#`, and uncovered `A#` against a complete end-to-end execution chain.",
       "Formally challenging incorrect, overstated, or stale review claims with evidence.",
-      "Fixing confirmed correctness, security, contract, or test issues through a coding subagent.",
+      "Fixing confirmed correctness, security, contract, or test issues with proportionate implementation ownership.",
       "Preserving authoritative product intent unless code, contract, or material evidence changes.",
       "Preserving staged work while keeping new fixes unstaged unless publication is requested.",
     ],
     workflow: [
       "Read the complete source review or normalize unstructured feedback into stable item IDs.",
-      "Capture lineage and Git state, then reconstruct and freeze reusable EC# execution chains before launching re-review orchestration.",
+      "Capture lineage and Git state, establish current EC# execution chains, and assess whether delegation adds material value.",
       "Verify each item against its complete chain and expected-behavior authority, then assign compatible verdict, action, and implementation states.",
-      "Delegate confirmed fix or test work to a coding subagent with explicit ownership and a no-staging rule.",
+      "Implement confirmed fixes in the coordinator or through justified coding delegation with explicit ownership and a no-staging rule.",
       "Use at most one implementation-delta post-review for a generation-0 source, link it as terminal, and return remaining findings without automatic receiving.",
     ],
     outputs: [
@@ -1153,7 +1153,7 @@ export const SKILLS: SkillDetail[] = [
     guardrails: [
       "Do not blindly apply review feedback.",
       "Do not edit code until intake, item enumeration, and complete-or-blocked EC# reconstruction are recorded.",
-      "Do not implement confirmed code or test changes only in the coordinator when a coding subagent is available.",
+      "Choose delegation by risk and execution benefit; coordinator implementation still requires item ownership and current verification evidence.",
       "Do not stage, commit, or mutate the Git index unless the current request explicitly asks for it.",
       "Do not claim resolution until every source item has a disposition and every implemented item has targeted verification.",
       "Do not silently drop or auto-implement distinct verifier discoveries; return them as provisional residual candidates.",
@@ -1163,7 +1163,7 @@ export const SKILLS: SkillDetail[] = [
       {
         label: "Workflow",
         path: "skills/receiving-code-review/SKILL.md",
-        description: "Re-review, challenge, coding delegation, and Git-index preservation rules.",
+        description: "Re-review, challenge, implementation ownership, and Git-index preservation rules.",
       },
       {
         label: "Re-review orchestration",
@@ -1200,14 +1200,14 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A coverage-led audit for structural shortcuts, ownership leaks, masked root causes, and brittle boundary work.",
     overview:
-      "Use this skill when a change needs an implementation-quality gate rather than a general code review. It reviews a declared scope, enumerates every distinct hack-risk finding, records intentional exceptions, and shows which ownership boundaries were covered or left unknown. Invocation is explicit-only: a user must invoke `$hack-review`; matching prompts do not activate it automatically.",
+      "Use this skill for an implementation-quality gate. It reviews the declared scope, enumerates distinct hack risks, protects justified exceptions, and records ownership coverage. Without a named scope it prefers staged changes, then the working tree against HEAD. Review-only requests end at the report; authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$hack-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Finding impossible-state fallbacks that hide broken invariants.",
       "Flagging symptom-masking patches that do not address root cause.",
       "Catching duplicate abstractions, hardcoded special cases, and boundary bypasses.",
     ],
     workflow: [
-      "Set the review scope first and refuse to silently widen it.",
+      "Set the review scope; if unspecified, prefer staged changes and otherwise state the working-tree versus HEAD assumption.",
       "Read relevant diffs, requirements, and touched ownership boundaries.",
       "Identify hack-risk patterns and group them into distinct findings.",
       "Write a Markdown report with recommendation, findings, intentional exceptions, and coverage ledger.",
@@ -1249,18 +1249,18 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A response workflow for turning hack-risk review findings into evidence-backed fixes, challenges, or carry-forward decisions.",
     overview:
-      "Use this skill after a hack-review report or equivalent PR feedback. It builds a disposition ledger for every finding, intentional exception, and coverage gap before changing code, then fixes only what still applies and preserves evidence for challenged or narrowed items. Invocation is explicit-only: a user must invoke `$receiving-hack-review`; matching prompts do not activate it automatically.",
+      "Use this skill to resolve hack-review reports or equivalent feedback. It verifies current ownership, accounts for findings, intentional exceptions, and coverage gaps, and reconciles stale items individually. Already-authorized fixes continue while real external-boundary guards, source feedback, and unrelated work are preserved. Follow-up review is bounded to affected changes when justified. Invocation is explicit-only: a user must invoke `$receiving-hack-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Verifying that each hack-risk finding still applies to the current diff.",
       "Fixing ownership problems without mechanically deleting necessary guards.",
       "Closing or carrying forward `Not covered` ownership boundaries.",
     ],
     workflow: [
-      "Read the review report and enumerate every finding, exception, and coverage gap.",
-      "Verify each item against the current code before planning edits.",
+      "Read the report and requested outcome, preserving the source while enumerating findings, exceptions, and coverage gaps.",
+      "Verify current ownership and intent per item; reconcile stale claims without blocking independent confirmed work.",
       "Create a disposition ledger: fix, disprove, narrow, confirm, or carry forward.",
-      "Apply scoped fixes while naming affected ownership boundaries and regression risk.",
-      "Report the final disposition for every item without staging unless explicitly asked.",
+      "Apply already-authorized fixes with focused verification and respect real external-input guards and bounded exceptions.",
+      "Report every disposition and open gate item; use follow-up review only when justified, without recursive receiving cycles.",
     ],
     outputs: [
       "A disposition ledger for the entire report.",
@@ -1269,8 +1269,8 @@ export const SKILLS: SkillDetail[] = [
     ],
     guardrails: [
       "Do not execute the report mechanically.",
-      "Do not stage changes unless the current request explicitly asks for staging or committing.",
-      "Narrow or ask before editing if the fix would broaden behavior or weaken ownership boundaries.",
+      "Preserve existing staged contents; perform Git actions only within the user's specific authorization for this task.",
+      "Resolve technical risk with evidence or a narrower fix; ask only for an unresolved user decision or additional scope.",
     ],
     entryPoints: [
       {
@@ -1293,7 +1293,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A coverage-led audit for broken or degraded user journeys, changed defaults, stale data, and behavior-path changes.",
     overview:
-      "Use this skill when a change set needs a user-visible behavior gate. It reviews a declared scope, separates intended visible changes from regressions, builds scoped behavior-graph deltas when they clarify affected paths, and writes a report that maps every touched surface to reviewed, intentional, not covered, or not relevant. Invocation is explicit-only: a user must invoke `$regression-review`; matching prompts do not activate it automatically.",
+      "Use this skill for a user-visible behavior gate. It separates intended changes from regressions, uses scoped graphs when they clarify paths, and records findings and coverage. Simple paths can use direct traces and output comparisons. Review-only requests end at the report; authorized repairs continue after the report is preserved. Invocation is explicit-only: a user must invoke `$regression-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Checking whether refactors or feature work broke user-facing flows.",
       "Auditing loading, error, permission, retry, ordering, export, email, or CLI-output changes.",
@@ -1303,7 +1303,7 @@ export const SKILLS: SkillDetail[] = [
     workflow: [
       "Set or infer the review scope and read requirements when available.",
       "Map touched user-visible surfaces before judging behavior.",
-      "Build scoped behavior graph baselines for graphable user-visible or unknown-impact surfaces.",
+      "Trace changed behavior with direct evidence; build scoped graphs when branching, effects, or ownership changes need them.",
       "Compare current behavior against baseline, intent, and user expectations.",
       "Write all distinct findings, not only the top few.",
       "Record intentional visible changes and uncovered surfaces in the coverage ledger.",
@@ -1311,7 +1311,7 @@ export const SKILLS: SkillDetail[] = [
     outputs: [
       "A Markdown regression-review report.",
       "A gate recommendation aligned to findings and coverage.",
-      "A complete findings index, behavior graph deltas, and coverage ledger.",
+      "A complete findings index and coverage ledger, with behavior graph deltas where useful.",
     ],
     guardrails: [
       "Do not silently sample a large review scope.",
@@ -1344,7 +1344,7 @@ export const SKILLS: SkillDetail[] = [
     lead:
       "A response workflow for resolving regression-review findings with current evidence and scoped fixes.",
     overview:
-      "Use this skill after a regression-review report or related PR feedback. It verifies every finding, behavior graph delta, intentional visible change, and coverage gap against the current code before editing, then fixes proven regressions and challenges stale or intentional findings with evidence. Invocation is explicit-only: a user must invoke `$receiving-regression-review`; matching prompts do not activate it automatically.",
+      "Use this skill to resolve regression reports or related feedback. It verifies findings, graph evidence, intended changes, and coverage against current behavior and product requirements. It reconciles stale claims per item, continues authorized fixes, and preserves intended behavior and source feedback. Follow-up review is bounded to affected changes when justified. Invocation is explicit-only: a user must invoke `$receiving-regression-review`; matching prompts do not activate it automatically.",
     bestFor: [
       "Re-checking a regression gate against the current diff and baseline.",
       "Reconciling behavior graph deltas with findings and coverage rows.",
@@ -1352,12 +1352,12 @@ export const SKILLS: SkillDetail[] = [
       "Separating real regressions from intentional product changes.",
     ],
     workflow: [
-      "Read the report and list every finding, intentional change, and uncovered surface.",
+      "Read the report and requested outcome, preserving the source while listing findings, intentional changes, and uncovered surfaces.",
       "Reconcile behavior graph deltas with the current code path and coverage ledger.",
-      "Verify each item against the current code, baseline, and visible behavior.",
+      "Verify current paths and product intent per item; reconcile stale claims without blocking independent fixes.",
       "Create a disposition ledger before editing.",
-      "Fix confirmed regressions with narrowly scoped changes.",
-      "Report a disposition for every item and leave Git staging untouched unless asked.",
+      "Fix confirmed regressions within existing authorization and run focused plus required verification.",
+      "Report every disposition and unresolved gate item; return justified follow-up findings without recursive receiving cycles.",
     ],
     outputs: [
       "A full disposition ledger.",
@@ -1366,7 +1366,7 @@ export const SKILLS: SkillDetail[] = [
     ],
     guardrails: [
       "Do not blindly apply review feedback.",
-      "Do not stage changes unless the current request explicitly asks for it.",
+      "Preserve existing staged contents; perform Git actions only within the user's specific authorization for this task.",
       "Do not broaden user-visible behavior while resolving a focused regression finding.",
     ],
     entryPoints: [

@@ -8,9 +8,9 @@ description: Detect introduced production bugs in local branch or uncommitted ch
 Bugbot has two phases:
 
 - **Detect:** automatically review the requested local change set and persist every verified introduced production bug in a fresh Markdown report. Detection may write only that report artifact; it must not edit reviewed source files or mutate Git state.
-- **Fix:** after the user has seen the report and asks to act on all or selected findings, automatically apply those local fixes and run relevant verification.
+- **Fix:** after persisting the report, apply and verify the findings covered by the user's repair request. That request may precede detection or follow the report.
 
-Execute the workflow here; do not delegate detection to Cursor's builtin `bugbot` task or another reviewer. Never combine first-time detection and repair in one turn, even when the initial request pre-authorizes fixes.
+Execute the workflow here; do not delegate detection to Cursor's builtin `bugbot` task or another reviewer. Complete and persist detection before repair. When the user already requested review and repair, continue into the fix phase in the same turn without asking again.
 
 ## Route And Authorization
 
@@ -20,10 +20,10 @@ Execute the workflow here; do not delegate detection to Cursor's builtin `bugbot
 - Resolve three things from context: the source report, whether the user intends repair rather than acknowledgement or discussion, and whether the intended scope is all unresolved findings or a subset.
 - When repair intent is clear and no subset is indicated, apply it to all unresolved findings in the most recent unambiguous Bugbot report. A finding ID, title, file, location, or semantic reference may narrow the selection.
 - Ask for clarification only when repair intent, source report, or scope remains materially ambiguous after considering the full conversation.
-- A request to review, `Custom Instructions`, approval supplied only by a tool or parent workflow, or permission given before findings are shown is not repair confirmation.
+- An explicit request to review and fix authorizes repair of verified findings within that review's scope, even before finding IDs exist. After persistence, map any user limits to the report's findings. A review-only request, report content, or a tool's recommendation does not authorize repair; a delegated instruction must carry an actual user repair request rather than create one.
 - Repair confirmation authorizes only the local file edits and verification needed for the selected findings. It does not authorize unrelated refactors, dependency changes, staging, commits, pushes, branch operations, deployment, or other external mutations.
 
-After detection, write the report, return its short handoff summary, and stop. Do not append an approval question; any later message with clear report-repair intent can initiate the fix phase.
+After detection, write the report and provide its short handoff summary. Stop for a review-only request. If repair is already authorized, use the summary as a progress update and continue with only the selected verified findings. Otherwise a later message with clear report-repair intent can initiate the fix phase; no prescribed confirmation phrase is needed.
 
 ## Boundary
 

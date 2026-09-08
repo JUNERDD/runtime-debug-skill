@@ -15,11 +15,11 @@
 
 Use independent agents to distinguish real defects from stale, duplicated, overstated, or misunderstood review claims, then separate evidence adjudication from implementation.
 
-The re-review assessor is always first. Re-review specialists remain read-only. Coding begins only after the coordinator freezes the actionable item set.
+The coordinator normally assesses the re-review plan after intake and execution-chain mapping. Add a read-only assessor when uncertain decomposition or independent risk analysis makes it useful. Re-review specialists remain read-only. Coding begins only after the coordinator freezes the actionable item set.
 
 ## Re-Review Assessment Subagent
 
-Give the assessor:
+Use the following context for coordinator assessment, or pass it to a justified assessor:
 
 - source report ID or source identifier, source type, scope fingerprint, baseline, target, and completion status
 - current scope identity and any drift
@@ -75,7 +75,7 @@ assumptions:
   - <assumption>
 ```
 
-For `single-verifier`, return one `V1` assignment covering the complete item universe.
+For `single-verifier`, return one `V1` assignment covering the complete item universe; identify the coordinator as its executor when applicable. Record `Coordinator assessment - <reason>` for local assessment, `V0 launched` for delegation, or the unavailable fallback when delegation could not run.
 
 ## Parallelism Heuristics
 
@@ -206,9 +206,9 @@ Use these rules:
 
 Start coding only after the coordinator freezes the actionable set.
 
-Default to one coding subagent to avoid conflicting edits. Multiple coding subagents require disjoint file ownership or isolated worktrees and an explicit merge order.
+Use coordinator implementation for cohesive changes when a handoff adds little value. Delegate when separable ownership, context isolation, or parallel execution improves the work. Multiple coding subagents require disjoint file ownership or isolated worktrees and an explicit merge order.
 
-Give the coding subagent:
+Apply this contract to the coordinator or assigned coding subagent:
 
 - resolution/source report IDs and current scope fingerprint
 - only accepted actionable `F#`, `T#`, or `A#` items
@@ -253,11 +253,13 @@ git_index_mutated: false
 
 The coordinator must copy the frozen actionable IDs into `Coding Assignments` exactly once each. After accepting the patch, map every `Implemented` or `Verified` item exactly once in `Code Changes`; an implementation state without both that mapping and independent coordinator verification is unfinished.
 
-The coordinator must inspect the patch, compare it with item boundaries, run the highest-value verification independently, and reject unrelated churn.
+For local implementation, use `Coordinator` in assignment and change rows, `Coding mode: Coordinator`, and `Coding subagent: Coordinator implementation - <reason>`. Apply the same actionable-item, evidence, and Git-state constraints.
+
+The coordinator must inspect the final patch, compare it with item boundaries, and verify the affected behavior and required checks. Evidence from a worker may be reused after checking its command or method, outcome, and applicability to the final code and inputs. Repeat or broaden checks for changed code, failures, unresolved concerns, or risk that warrants independent reproduction; reject unrelated churn.
 
 ## Fallbacks and Conflict Safety
 
-- If subagents are unavailable, disclose the fallback in the resolution report and execute the same assessor, verifier, and coding contracts in the coordinator.
+- If useful delegation cannot run because subagents are unavailable, disclose the fallback and execute the same contracts in the coordinator. Choosing local assessment or implementation is a normal execution mode, not an unavailable-tool claim.
 - If a verifier fails, retry once with a narrower item set when practical; otherwise mark owned items `Unverifiable` or reassign them.
 - If verifiers conflict, seek stronger evidence or a focused independent verifier. Do not average conclusions.
 - If a verifier discovers a distinct material issue outside the frozen source universe, record it as a provisional `V#-N#` residual and return it to the user. Do not silently omit it, promote it into implementation, or launch another review. Merge it only when its canonical semantic issue key matches an existing source item.

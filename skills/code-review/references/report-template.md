@@ -57,7 +57,7 @@ Treat this completed report as the fixed review input for downstream work. Do no
 
 ## Review Orchestration
 
-- Assessment subagent: `[R0 launched | Subagent unavailable - coordinator fallback]`
+- Assessment subagent: `[Coordinator assessment - <reason> | R0 launched | Subagent unavailable - coordinator fallback]`
 - Orchestration decision: `[Single reviewer | Parallel specialists]`
 - Decision confidence: `[high | medium | low]`
 - Decision rationale: `[why this mode is proportionate to semantic scope and risk]`
@@ -299,6 +299,8 @@ Both `ref` and `change` in a reopen delta must identify concrete evidence; `None
 
 ## Receiving Handoff
 
+For generation `0`, a complete report may be `Ready for receiving-code-review` with `Automatic receiving permitted: No` when the user requested review only. Set `Yes` only when the report is ready and the user has already authorized continuation. Artifact readiness does not grant authority. A regeneration handoff and every generation `1` report require `No`.
+
 - Handoff status: `[Ready for receiving-code-review | Regenerate before implementation | Terminal post-review - return to user/owner]`
 - Automatic receiving permitted: `[Yes | No]`
 - Source report ID: `[same Report ID]`
@@ -316,7 +318,7 @@ Both `ref` and `change` in a reopen delta must identify concrete evidence; `None
 
 ## Report Self-Check
 
-- `[yes | no]` Assessment subagent ran or unavailable fallback is disclosed.
+- `[yes | no]` Actual assessment mode and rationale are recorded: coordinator, delegated assessor, or unavailable fallback.
 - `[yes | no]` Every changed review-relevant or unknown-impact area appears once in `Review Coverage Ledger`.
 - `[yes | no]` Every final finding appears once in the index and once as a matching card.
 - `[yes | no]` Every `Finding F#` area references an existing finding.
